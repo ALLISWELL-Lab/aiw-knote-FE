@@ -1,6 +1,14 @@
+import { useNavigate } from 'react-router-dom'; // useNavigate 임포트
 import Layout from "../components/Layout";
 
 function Dashboard() {
+  const navigate = useNavigate(); // useNavigate 해서 navigate 함수 가져오기
+
+  // 이동 함수
+  const goToMeetingResult = (id) => {
+    navigate(`/meeting/result?id=${id}`);
+  };
+
   return (
     <Layout>
       {/* 헤더 */}
