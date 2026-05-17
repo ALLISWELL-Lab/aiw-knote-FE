@@ -188,8 +188,8 @@ function Team() {
             </div>
 
             <MemberRow
-              initial="김"
-              name="김이화"
+              initial="이"
+              name="이화연"
               role="프론트엔드"
               status="온라인"
               color="#4A8DFF"
@@ -197,8 +197,8 @@ function Team() {
             />
 
             <MemberRow
-              initial="박"
-              name="박백엔"
+              initial="감"
+              name="김이화"
               role="백엔드"
               status="온라인"
               color="#74A8FF"
@@ -206,8 +206,8 @@ function Team() {
             />
 
             <MemberRow
-              initial="최"
-              name="최기획"
+              initial="하"
+              name="하츄핑"
               role="기획"
               status="오프라인"
               color="#ADDCFF"
@@ -215,8 +215,8 @@ function Team() {
             />
 
             <MemberRow
-              initial="이"
-              name="이디자인"
+              initial="전"
+              name="전우치"
               role="디자인"
               status="온라인"
               color="#8DBFFF"
@@ -224,8 +224,8 @@ function Team() {
             />
 
             <MemberRow
-              initial="정"
-              name="정테스트"
+              initial="홍"
+              name="홍길동"
               role="QA"
               status="오프라인"
               color="#C9DEFA"
