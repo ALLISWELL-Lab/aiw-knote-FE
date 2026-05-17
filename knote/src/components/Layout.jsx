@@ -91,6 +91,7 @@ function RobotBriefing({ currentDate }) {
   return (
     <div className="w-full h-[190px] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.16)] px-[20px] py-[16px] border border-[#C9DEFA] rounded-[4px] flex flex-col justify-between flex-shrink-0">
       <div className="flex-shrink-0">
+
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
           <rect x="11" y="13" width="26" height="25" rx="4" stroke="#4A8DFF" strokeWidth="4" />
           <circle cx="19" cy="25" r="2.5" fill="#4A8DFF" />
@@ -179,6 +180,7 @@ function Layout({ children }) {
                   #JAVA
                 </span>
               </div>
+
             </div>
           </div>
 
@@ -222,7 +224,7 @@ function Layout({ children }) {
                 strokeWidth="2"
               />
               <path
-                d="M10 19C10.4 20.2 11.2 21 12 21C12.8 21 13.6 20.2 14 19"
+                d="M10 19C10.4 20.2 11 21 12 21C13 21 13.6 20.2 14 19"
                 stroke="black"
                 strokeWidth="2"
               />
