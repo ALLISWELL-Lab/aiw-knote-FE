@@ -22,7 +22,7 @@ function TodoSummaryCard({ title, value, description }) {
 
 function TodoPreviewRow({ title, status, member }) {
   return (
-    <div className="grid grid-cols-[1fr_72px_70px] h-[38px] border-b border-[#C9DEFA] text-[13px] text-black">
+    <div className="grid grid-cols-[1fr_72px_80px] h-[38px] border-b border-[#C9DEFA] text-[13px] text-black">
       <div className="flex items-center px-[12px]">{title}</div>
       <div className="flex items-center justify-center">{status}</div>
       <div className="flex items-center justify-center">{member}</div>
@@ -58,7 +58,7 @@ function Todo() {
               프로젝트 스프린트
             </p>
             <p className="text-[13px] text-black">
-              프로젝트 진행 보드와 AI 일정 제안을 확인합니다.
+              프로젝트 진행 보드와 AI D-day 제안을 확인합니다.
             </p>
           </button>
 
@@ -106,7 +106,7 @@ function Todo() {
             </span>
           </div>
 
-          <div className="grid grid-cols-[1fr_72px_70px] h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] text-[13px] text-black font-semibold">
+          <div className="grid grid-cols-[1fr_72px_80px] h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] text-[13px] text-black font-semibold">
             <div className="flex items-center px-[12px]">TODO</div>
             <div className="flex items-center justify-center">상태</div>
             <div className="flex items-center justify-center">담당자</div>
@@ -115,17 +115,17 @@ function Todo() {
           <TodoPreviewRow
             title="회의 업로드 화면 정리하기"
             status="진행"
-            member="김이화"
+            member="임이랑"
           />
           <TodoPreviewRow
             title="STT 응답 구조 확인하기"
             status="대기"
-            member="박백엔"
+            member="정서윤"
           />
           <TodoPreviewRow
-            title="발표용 시연 흐름 정리하기"
-            status="완료"
-            member="최기획"
+            title="회의 업로드 API 연동 점검하기"
+            status="진행"
+            member="강민지"
           />
           <TodoPreviewRow
             title="액션아이템 담당자 매칭하기"

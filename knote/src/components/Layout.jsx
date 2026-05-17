@@ -197,10 +197,10 @@ function Layout({ children }) {
 
             <div className="flex gap-[6px]">
               <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-[20px] text-[14px]">
-                #백엔드 ×
+                #백엔드
               </span>
               <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-[20px] text-[14px]">
-                #JAVA ×
+                #JAVA
               </span>
             </div>
           </div>
