@@ -191,7 +191,7 @@ function Layout({ children }) {
 
           <div className="flex-1 pt-[10px] min-w-0">
             <div className="text-[15px] text-black font-semibold mb-[14px]">
-              김이화
+              정서윤
             </div>
 
             <div className="h-[2px] bg-black w-full mb-[14px]" />
