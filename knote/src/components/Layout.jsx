@@ -182,9 +182,9 @@ function Layout({ children }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#EAF1FC] flex overflow-x-auto">
-      {/* Sidebar */}
-      <aside className="w-[290px] h-screen sticky top-0 bg-[#ADDCFF] px-[34px] py-[42px] flex flex-col shrink-0 border-r border-[#C9DEFA] overflow-hidden">
+    <div className="min-h-screen bg-[#EAF1FC] overflow-x-auto">
+      {/* Fixed Sidebar */}
+      <aside className="fixed left-0 top-0 z-20 w-[290px] h-screen bg-[#ADDCFF] px-[34px] py-[42px] flex flex-col border-r border-[#C9DEFA]">
         {/* Profile */}
         <div className="flex gap-[26px] items-start">
           <UserIcon />
@@ -196,10 +196,10 @@ function Layout({ children }) {
             <div className="h-[2px] bg-black w-full mb-[14px]" />
 
             <div className="flex gap-[6px]">
-              <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-[20px] text-[14px]">
+              <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[6px] h-[22px] leading-[20px] text-[14px]">
                 #백엔드
               </span>
-              <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-[20px] text-[14px]">
+              <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[6px] h-[22px] leading-[20px] text-[14px]">
                 #JAVA
               </span>
             </div>
@@ -221,7 +221,7 @@ function Layout({ children }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-[1500px] min-h-screen bg-[#EAF1FC]">
+      <main className="ml-[290px] min-w-[1500px] min-h-screen bg-[#EAF1FC]">
         {/* Header */}
         <header className="h-[70px] w-full bg-[#ADDCFF] border-b border-[#C9DEFA] shadow-[0_4px_5px_rgba(0,0,0,0.16)] flex items-center justify-between px-[40px]">
           <div className="flex items-center gap-[24px] text-black">
