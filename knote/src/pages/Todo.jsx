@@ -1,78 +1,142 @@
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 
-function Todo() {
+function TodoSummaryCard({ title, value, description }) {
   return (
-    <Layout>
-      <div className="mb-8">
-        <p className="text-sm text-gray-500 mb-2">Home / 투두</p>
-        <h2 className="text-2xl font-bold text-gray-900">투두 관리</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          회의에서 추출된 작업과 담당자 매칭 현황을 확인할 수 있습니다.
-        </p>
+    <div className="border border-[#C9DEFA] bg-white shadow-sm">
+      <div className="h-[36px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[14px] text-[14px] font-semibold text-black">
+        {title}
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        {/* 왼쪽: 추출된 TODO */}
-        <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-semibold text-gray-800">회의에서 추출된 TODO</h3>
-            <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600">
-              3 Tasks
-            </span>
-          </div>
+      <div className="px-[18px] py-[16px]">
+        <p className="text-[30px] font-semibold text-black mb-[8px]">
+          {value}
+        </p>
+        <p className="text-[13px] leading-[20px] text-black">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
 
-          <div className="space-y-4 text-sm text-gray-700">
-            <div className="border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB] shadow-sm flex items-center justify-between">
-              <span>로그인 페이지 퍼블리싱</span>
-              <span className="text-amber-400">●</span>
-            </div>
+function TodoPreviewRow({ title, status, member }) {
+  return (
+    <div className="grid grid-cols-[1fr_72px_70px] h-[38px] border-b border-[#C9DEFA] text-[13px] text-black">
+      <div className="flex items-center px-[12px]">{title}</div>
+      <div className="flex items-center justify-center">{status}</div>
+      <div className="flex items-center justify-center">{member}</div>
+    </div>
+  );
+}
 
-            <div className="border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB] shadow-sm flex items-center justify-between">
-              <span>회의 녹음 기능 API 연결</span>
-              <span className="text-green-500">●</span>
-            </div>
+function Todo() {
+  const navigate = useNavigate();
 
-            <div className="border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB] shadow-sm flex items-center justify-between">
-              <span>발표 자료 초안 정리</span>
-              <span className="text-blue-500">●</span>
-            </div>
-          </div>
+  return (
+    <Layout>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
+        <span className="font-semibold">⌂ Home</span>
+        <span className="text-gray-400">/</span>
+        <span>투두</span>
+        <span className="text-gray-400">/</span>
+        <span className="font-semibold">투두 메인</span>
+      </div>
+
+      <div className="h-px bg-[#C9DEFA] mb-[42px]" />
+
+      <div className="w-[920px] mx-auto">
+        {/* Top buttons */}
+        <div className="grid grid-cols-2 gap-[28px] mb-[34px]">
+          <button
+            type="button"
+            onClick={() => navigate("/todo/sprint")}
+            className="h-[110px] border border-[#C9DEFA] bg-white shadow-sm hover:bg-[#ADDCFF]/40 flex flex-col items-center justify-center"
+          >
+            <p className="text-[18px] font-semibold text-black mb-[10px]">
+              프로젝트 스프린트
+            </p>
+            <p className="text-[13px] text-black">
+              프로젝트 진행 보드와 AI 일정 제안을 확인합니다.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/todo/matching")}
+            className="h-[110px] border border-[#C9DEFA] bg-white shadow-sm hover:bg-[#ADDCFF]/40 flex flex-col items-center justify-center"
+          >
+            <p className="text-[18px] font-semibold text-black mb-[10px]">
+              TODO 담당자 매칭
+            </p>
+            <p className="text-[13px] text-black">
+              회의 기반 AI TODO를 팀원과 매칭합니다.
+            </p>
+          </button>
         </div>
 
-        {/* 오른쪽: 담당자 매칭 */}
-        <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-semibold text-gray-800">담당자 매칭</h3>
-            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">
-              Assigned
+        {/* Summary */}
+        <div className="grid grid-cols-3 gap-[20px] mb-[34px]">
+          <TodoSummaryCard
+            title="전체 TODO"
+            value="12"
+            description="현재 프로젝트에서 관리 중인 전체 TODO입니다."
+          />
+          <TodoSummaryCard
+            title="진행 중"
+            value="5"
+            description="담당자가 배정되어 진행 중인 작업입니다."
+          />
+          <TodoSummaryCard
+            title="매칭 필요"
+            value="3"
+            description="AI가 추출했지만 담당자 확인이 필요한 작업입니다."
+          />
+        </div>
+
+        {/* Recent TODO preview */}
+        <div className="border border-[#C9DEFA] bg-white shadow-sm">
+          <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+            <span className="text-[15px] font-semibold text-black">
+              최근 TODO
+            </span>
+            <span className="text-[13px] text-gray-500">
+              회의 분석 결과 기반
             </span>
           </div>
 
-          <div className="space-y-4 text-sm text-gray-700">
-            <div className="flex items-center justify-between border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB] shadow-sm">
-              <div>
-                <p className="text-gray-800">로그인 페이지 퍼블리싱</p>
-                <p className="text-xs text-gray-400 mt-1">Frontend</p>
-              </div>
-              <span className="text-blue-600 font-medium">김이화</span>
-            </div>
-
-            <div className="flex items-center justify-between border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB] shadow-sm">
-              <div>
-                <p className="text-gray-800">회의 녹음 기능 API 연결</p>
-                <p className="text-xs text-gray-400 mt-1">Backend</p>
-              </div>
-              <span className="text-blue-600 font-medium">박백엔</span>
-            </div>
-
-            <div className="flex items-center justify-between border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB] shadow-sm">
-              <div>
-                <p className="text-gray-800">발표 자료 초안 정리</p>
-                <p className="text-xs text-gray-400 mt-1">Planning</p>
-              </div>
-              <span className="text-blue-600 font-medium">최기획</span>
-            </div>
+          <div className="grid grid-cols-[1fr_72px_70px] h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] text-[13px] text-black font-semibold">
+            <div className="flex items-center px-[12px]">TODO</div>
+            <div className="flex items-center justify-center">상태</div>
+            <div className="flex items-center justify-center">담당자</div>
           </div>
+
+          <TodoPreviewRow
+            title="회의 업로드 화면 정리하기"
+            status="진행"
+            member="김이화"
+          />
+          <TodoPreviewRow
+            title="STT 응답 구조 확인하기"
+            status="대기"
+            member="박백엔"
+          />
+          <TodoPreviewRow
+            title="발표용 시연 흐름 정리하기"
+            status="완료"
+            member="최기획"
+          />
+          <TodoPreviewRow
+            title="액션아이템 담당자 매칭하기"
+            status="매칭"
+            member="미정"
+          />
+        </div>
+
+        <div className="text-center text-[13px] leading-[21px] text-black mt-[34px]">
+          회의 분석 결과에서 추출된 TODO를 기반으로 프로젝트 스프린트와
+          담당자 매칭을 진행할 수 있습니다.
         </div>
       </div>
     </Layout>

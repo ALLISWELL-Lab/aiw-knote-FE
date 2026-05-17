@@ -1,195 +1,337 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import api from "../api";
 
-function MeetingResult() {
-  const [analysis, setAnalysis] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [sttContent, setSttContent] = useState(""); 
+function SectionBox({ title, children }) {
+  return (
+    <div className="w-full border border-[#C9DEFA] bg-white shadow-sm">
+      <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
+        <span className="text-[15px] font-semibold text-black">
+          {title}
+        </span>
+      </div>
 
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const meetingId = queryParams.get('id');
-  console.log("현재 요청하려는 ID:", meetingId);
-
-  useEffect(() => {
-// meetingId가 없거나 문자열 "null"인 경우 실행 방지
-  if (!meetingId || meetingId === "null") {
-    console.warn("ID가 없어서 요청을 중단합니다.");
-    setLoading(false);
-    return;
-  }
-
-    const fetchData = async () => {
-  try {
-    console.log("요청 주소:", `/meetings/${meetingId}`);
-    const response = await api.get(`/meetings/${meetingId}`);
-    const data = response.data;
-
-    // 데이터가 있나 확인
-      const hasSummary = data.summaryText && data.summaryText !== "[]";
-
-    let summaryList = [];
-    try {
-      summaryList = data.summaryText ? JSON.parse(data.summaryText) : [];
-    } catch (e) {
-      summaryList = [data.summaryText];
-    }
-
-    setAnalysis({ ...data, displaySummary: summaryList });
-
-    if (data.transcript) {
-        setSttContent(data.transcript);
-      }
-      
-    setLoading(false);
-
-    
-
-    // [핵심] 만약 아직 요약이 없다면? 3초 뒤에 한 번 더 시도 (자동 새로고침 효과)
-      if (!hasSummary) {
-        setTimeout(fetchData, 3000); 
-      }
-
-  } catch (error) {
-    console.error("데이터 로딩 중 에러 발생:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-    fetchData();
-  }, [meetingId]);
-
-  // 실제 파일 다운로드 함수
-  const handleDownload = () => {
-    if (!sttContent) {
-      alert("다운로드할 STT 원문이 없습니다.");
-      return;
-    }
-    const element = document.createElement("a");
-    const file = new Blob([sttContent], { type: 'text/plain' });
-    element.href = URL.createObjectURL(file);
-    element.download = `meeting_${meetingId}_script.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element); // 깔끔하게 제거
-  };
-
-  if (loading) return <Layout><div className="p-10 text-center">회의 결과를 분석 중입니다...</div></Layout>;
-  if (!analysis) return <Layout><div className="p-10 text-center">데이터를 찾을 수 없습니다.</div></Layout>;
-
-// 데이터가 없을 때 보여줄 스켈레톤 UI 컴포넌트
-  const SkeletonLoader = ({ text }) => (
-    <div className="animate-pulse space-y-3 py-4">
-      <div className="h-16 bg-gray-100 rounded-2xl w-full"></div>
-      <div className="h-16 bg-gray-100 rounded-2xl w-full"></div>
-      <p className="text-xs text-blue-500 font-medium animate-bounce text-center mt-2">
-        {text}
-      </p>
+      <div className="px-[20px] py-[18px] text-[14px] leading-[28px] text-black">
+        {children}
+      </div>
     </div>
   );
+}
 
-  if (loading) return <Layout><div className="p-10 text-center">분석 준비 중...</div></Layout>;
-  if (!analysis) return <Layout><div className="p-10 text-center">데이터를 찾을 수 없습니다.</div></Layout>;
+function normalizeTranscript(transcript) {
+  if (!transcript) return [];
+
+  if (Array.isArray(transcript)) {
+    return transcript.map((item, index) => {
+      if (typeof item === "string") {
+        return {
+          speaker: `STT SEGMENT ${index + 1}`,
+          text: item,
+        };
+      }
+
+      return {
+        speaker:
+          item.speaker ||
+          item.speakerName ||
+          item.speakerLabel ||
+          `SPEAKER ${index + 1}`,
+        text:
+          item.text ||
+          item.content ||
+          item.transcriptText ||
+          item.sentence ||
+          "",
+      };
+    });
+  }
+
+  if (typeof transcript === "string") {
+    return transcript
+      .split("\n")
+      .filter((line) => line.trim() !== "")
+      .map((line, index) => ({
+        speaker: `STT SEGMENT ${index + 1}`,
+        text: line,
+      }));
+  }
+
+  return [];
+}
+
+function normalizeActionItems(actionItems) {
+  if (!actionItems) return [];
+
+  if (Array.isArray(actionItems)) {
+    return actionItems.map((item, index) => {
+      if (typeof item === "string") {
+        return {
+          id: index,
+          title: item,
+          assignee: "미지정",
+          done: false,
+        };
+      }
+
+      return {
+        id: item.actionItemId || item.actionItemsId || item.id || index,
+        title: item.title || item.content || item.task || "액션아이템",
+        assignee:
+          item.assigneeName ||
+          item.assignee ||
+          item.memberName ||
+          item.assigneeId ||
+          "미지정",
+        done: item.done || item.completed || false,
+      };
+    });
+  }
+
+  return [];
+}
+
+function MeetingResult() {
+  const [searchParams] = useSearchParams();
+  const meetingId = searchParams.get("id");
+
+  const [meeting, setMeeting] = useState(null);
+  const [transcriptList, setTranscriptList] = useState([]);
+  const [actionItems, setActionItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(Boolean(meetingId));
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const fetchMeetingResult = async () => {
+      if (!meetingId) {
+        setErrorMessage(
+          "meetingId가 없어 회의 분석 결과를 불러올 수 없습니다."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setErrorMessage("");
+
+        const response = await api.get(`/meetings/${meetingId}`);
+        const data = response.data;
+
+        setMeeting(data);
+        setTranscriptList(normalizeTranscript(data.transcript));
+        setActionItems(normalizeActionItems(data.actionItems));
+      } catch (error) {
+        console.error("회의 분석 결과 조회 실패:", error);
+        setErrorMessage(
+          "회의 분석 결과를 불러오지 못했습니다. 백엔드 서버 실행 여부와 meetingId를 확인해 주세요."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMeetingResult();
+  }, [meetingId]);
+
+  const meetingTitle =
+    meeting?.agenda ||
+    meeting?.title ||
+    meeting?.meetingTitle ||
+    "회의 분석 결과";
+
+  const summaryText =
+    meeting?.summaryText ||
+    meeting?.summary ||
+    meeting?.summaryContent ||
+    "";
+
+  const decisions =
+    meeting?.decisions ||
+    meeting?.decisionItems ||
+    meeting?.decisionSummary ||
+    [];
 
   return (
     <Layout>
-      <div className="mb-8 flex justify-between items-end">
-        <div>
-          <p className="text-sm text-gray-500 mb-1">Home / 회의 / 분석 결과</p>
-          <h2 className="text-2xl font-bold text-gray-900">회의 분석 결과</h2>
-        </div>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
+        <span className="font-semibold">⌂ Home</span>
+        <span className="text-gray-400">/</span>
+        <span>회의</span>
+        <span className="text-gray-400">/</span>
+        <span className="font-semibold">회의 분석</span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 왼쪽 컬럼 */}
-        <div className="space-y-6">
-          {/* 1. 회의 정보 & 다운로드 버튼 */}
-          <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="font-semibold text-gray-800">회의 정보</h3>
-              <button 
-                onClick={handleDownload}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors text-xs font-bold border border-blue-100"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                원문 다운로드
+      <div className="h-px bg-[#C9DEFA] mb-[34px]" />
+
+      {isLoading && (
+        <div className="w-[850px] h-[420px] mx-auto border border-[#C9DEFA] bg-white flex items-center justify-center text-[15px] text-black shadow-sm">
+          회의 분석 결과를 불러오는 중입니다...
+        </div>
+      )}
+
+      {!isLoading && errorMessage && (
+        <div className="w-[850px] h-[420px] mx-auto border border-[#C9DEFA] bg-white flex flex-col items-center justify-center text-center shadow-sm">
+          <p className="text-[15px] font-semibold text-black mb-[12px]">
+            결과 조회 실패
+          </p>
+          <p className="text-[13px] leading-[22px] text-red-500 max-w-[520px]">
+            {errorMessage}
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !errorMessage && meeting && (
+        <div className="grid grid-cols-[440px_1fr] gap-[34px]">
+          {/* Left column */}
+          <div>
+            <div className="flex items-center justify-between mb-[18px]">
+              <h2 className="text-[20px] font-semibold text-black">
+                {meetingTitle}
+              </h2>
+
+              <button className="w-[84px] h-[30px] bg-[#4A8DFF] text-white text-[13px] rounded-[3px]">
+                다운로드
               </button>
             </div>
-            <p className="text-lg text-gray-700 font-bold mb-1">{analysis.agenda || "새로운 회의"}</p>
-            <p className="text-xs text-gray-400">Meeting ID: {analysis.meetingId}</p>
-          </div>
 
-          {/* 2. 주요 결정사항 */}
-          <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-            <h3 className="font-semibold text-gray-800 mb-4">주요 결정사항</h3>
-            <div className="space-y-3 text-sm text-gray-700">
-              {analysis.displaySummary && analysis.displaySummary.length > 0 ? (
-                analysis.displaySummary.slice(0, 2).map((item, index) => (
-                  <div key={index} className="border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB]">
-                    <span className="font-bold text-blue-600 mr-2">{index + 1}.</span> {item}
+            {/* Decision box */}
+            <div className="w-full border border-[#C9DEFA] bg-white mb-[28px] shadow-sm">
+              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
+                <span className="text-[15px] font-semibold text-black">
+                  회의 결정사항
+                </span>
+              </div>
+
+              <div className="px-[20px] py-[18px] text-[14px] leading-[30px] text-black min-h-[130px]">
+                {Array.isArray(decisions) && decisions.length > 0 ? (
+                  decisions.map((decision, index) => (
+                    <p key={index}>
+                      {index + 1}.{" "}
+                      {typeof decision === "string"
+                        ? decision
+                        : decision.content || decision.title || decision.text}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-gray-500">
+                    백엔드 응답에 결정사항 데이터가 없습니다.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* AI Todo */}
+            <div className="w-full border border-[#C9DEFA] bg-white shadow-sm">
+              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
+                <span className="text-[15px] font-semibold text-black">
+                  AI TODO
+                </span>
+              </div>
+
+              <div className="px-[20px] py-[18px]">
+                {actionItems.length > 0 ? (
+                  <div className="space-y-[12px] text-[14px] text-black">
+                    {actionItems.map((item) => (
+                      <label
+                        key={item.id}
+                        className="flex items-center justify-between gap-[10px]"
+                      >
+                        <div className="flex items-center gap-[10px]">
+                          <input
+                            type="checkbox"
+                            defaultChecked={item.done}
+                            className="w-[15px] h-[15px] accent-[#4A8DFF]"
+                          />
+                          <span>{item.title}</span>
+                        </div>
+
+                        <span className="text-[13px] text-black whitespace-nowrap">
+                          {item.assignee}
+                        </span>
+                      </label>
+                    ))}
                   </div>
-                ))
-              ) : (
-                <SkeletonLoader text="AI가 결정사항을 추출하고 있습니다..." />
-              )}
+                ) : (
+                  <p className="text-[14px] text-gray-500">
+                    백엔드 응답에 액션아이템 데이터가 없습니다.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* 3. Action Item */}
-          <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-            <h3 className="font-semibold text-gray-800 mb-4">Action Item</h3>
-            <div className="space-y-3">
-              {analysis.actionItems && analysis.actionItems.length > 0 ? (
-                analysis.actionItems.map((item) => (
-                  <div key={item.id} className="flex flex-col border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB]">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-sm text-gray-800">{item.title}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${item.isCompleted ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                        {item.isCompleted ? "완료" : "진행중"}
-                      </span>
+          {/* Right column */}
+          <div>
+            {/* Summary meta */}
+            <div className="border border-[#C9DEFA] bg-white mb-[18px] shadow-sm">
+              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+                <span className="text-[15px] font-semibold text-black">
+                  회의 요약
+                </span>
+                <span className="text-[13px] text-gray-500">
+                  meetingId: {meetingId}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 border-b border-[#C9DEFA]">
+                <div className="h-[40px] border-r border-[#C9DEFA] flex items-center px-[16px] text-[14px] text-black">
+                  회의 ID
+                </div>
+                <div className="h-[40px] flex items-center px-[16px] text-[14px] text-black">
+                  {meeting?.meetingId || meetingId}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2">
+                <div className="h-[40px] border-r border-[#C9DEFA] flex items-center px-[16px] text-[14px] text-black">
+                  회의명
+                </div>
+                <div className="h-[40px] flex items-center px-[16px] text-[14px] text-black truncate">
+                  {meetingTitle}
+                </div>
+              </div>
+            </div>
+
+            <SectionBox title="AI 회의 요약">
+              {summaryText ? (
+                <p>{summaryText}</p>
+              ) : (
+                <p className="text-gray-500">
+                  백엔드 응답에 회의 요약 데이터가 없습니다.
+                </p>
+              )}
+            </SectionBox>
+
+            {/* STT segment area */}
+            <div className="border border-[#C9DEFA] bg-white h-[300px] overflow-hidden mt-[18px] shadow-sm">
+              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
+                <span className="text-[15px] font-semibold text-black">
+                  STT 변환 결과
+                </span>
+              </div>
+
+              <div className="h-[258px] overflow-y-auto px-[20px] py-[18px] text-[14px] text-black leading-[24px]">
+                {transcriptList.length > 0 ? (
+                  transcriptList.map((segment, index) => (
+                    <div key={index} className="mb-[22px]">
+                      <p className="font-semibold mb-[6px] text-black">
+                        {segment.speaker}
+                      </p>
+                      <p>{segment.text}</p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{item.memo}</p>
-                  </div>
-                ))
-              ) : (
-                <SkeletonLoader text="AI가 할 일을 정리하고 있습니다..." />
-              )}
+                  ))
+                ) : (
+                  <p className="text-gray-500">
+                    백엔드 응답에 STT 변환 결과가 없습니다.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
-        {/* 오른쪽 컬럼 */}
-        <div className="space-y-6">
-          {/* 4. AI 회의 요약 */}
-          <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-            <h3 className="font-semibold text-gray-800 mb-4">AI 회의 요약</h3>
-            <div className="text-sm text-gray-700 leading-7 space-y-3">
-              {analysis.displaySummary && analysis.displaySummary.length > 0 ? (
-                analysis.displaySummary.map((segment, index) => (
-                  <p key={index} className="border border-gray-200 rounded-2xl p-4 bg-[#F5F7FB]">{segment}</p>
-                ))
-              ) : (
-                <SkeletonLoader text="AI가 회의 내용을 요약 중입니다..." />
-              )}
-            </div>
-          </div>
-
-          {/* 5. STT 텍스트 미리보기 */}
-          <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-800">STT 텍스트 변환 결과</h3>
-              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">Transcript Preview</span>
-            </div>
-            <div className="h-[420px] overflow-y-auto rounded-2xl border border-gray-200 bg-[#F5F7FB] p-4 text-sm text-gray-700 leading-7 whitespace-pre-wrap">
-              {sttContent || "STT 텍스트를 불러오는 중입니다..."}
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </Layout>
   );
 }

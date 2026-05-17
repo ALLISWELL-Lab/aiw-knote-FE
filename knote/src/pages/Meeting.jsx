@@ -1,109 +1,100 @@
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
-import api from "../api"; // axios 인스턴스 임포트
 
 function Meeting() {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // 파일을 선택했을 때 실행되는 함수
-  const handleFileChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      console.log("업로드 시작...");
-
-      // 1. 서버로 보낼 FormData 생성
-      const formData = new FormData();
-      formData.append("file", file);
-      // 백엔드 CreateMeetingRecordRequest 형식을 맞추기 위해 agenda 추가
-      formData.append("agenda", file.name.split('.')[0]); // 파일명을 기본 제목으로 사용
-
-      // 2. 백엔드 API 호출 (회의 생성 - 파일 업로드)
-      const response = await api.post("/meetings/record-file", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      // 3. 서버가 응답한 데이터에서 생성된 회의 ID 추출
-      const newMeetingId = response.data.meetingId;
-
-      console.log("실제 생성된 회의 ID:", newMeetingId);
-
-      if (newMeetingId) {
-        // 4. 성공 시 주소창에 ID를 달고 결과 페이지로 이동!
-        navigate(`/meeting/result?id=${newMeetingId}`);
-      }
-    } catch (error) {
-      console.error("파일 업로드 중 오류 발생:", error.response || error);
-      alert("업로드에 실패했습니다. 백엔드 서버 상태를 확인해주세요.");
-    } finally {
-     // 파일 입력창을 초기화하여 같은 파일을 다시 올릴 수 있게 함
-     event.target.value = "";
-    }
-  };
 
   return (
     <Layout>
-      <div className="mb-8">
-        <p className="text-sm text-gray-500 mb-2">Home / 회의 / 회의 업로드</p>
-        <h2 className="text-2xl font-bold text-gray-900">회의 업로드</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          회의 녹음 또는 음성 파일을 업로드해 요약과 분석에 활용할 수 있습니다.
-        </p>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
+        <span className="font-semibold">⌂ Home</span>
+        <span className="text-gray-400">/</span>
+        <span>회의</span>
+        <span className="text-gray-400">/</span>
+        <span className="font-semibold">회의 업로드</span>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-md p-8 border border-gray-100">
-        <div className="grid grid-cols-2 gap-8">
-          <div className="rounded-3xl border border-gray-200 bg-[#F5F7FB] p-8 min-h-[360px] flex flex-col items-center justify-center">
-            <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center text-3xl mb-6 shadow-sm">
-              🎙️
-            </div>
+      <div className="h-px bg-[#C9DEFA] mb-[104px]" />
 
-            <div className="flex flex-col gap-4 w-full items-center">
-              {/* RECORD 버튼: 여기도 나중에 녹음 시작 API와 연동이 필요할 수 있습니다. */}
+      {/* Main upload box */}
+      <div className="w-[760px] h-[335px] border border-[#C9DEFA] bg-white mx-auto flex items-center justify-center shadow-sm">
+        <div className="w-full flex items-center justify-center gap-[145px]">
+          {/* Left record/upload panel */}
+          <div className="w-[245px] h-[250px] border border-[#C9DEFA] bg-white px-[34px] py-[30px] shadow-sm">
+            <p className="text-[14px] text-black mb-[32px] whitespace-nowrap">
+              회의 녹음/음성 파일 업로드
+            </p>
+
+            <div className="flex items-center gap-[26px] mb-[38px]">
+              <div className="w-[28px] h-[28px] rounded-full border-[4px] border-[#4A8DFF] flex items-center justify-center">
+                <div className="w-[11px] h-[11px] rounded-full bg-[#4A8DFF]" />
+              </div>
+
               <button
-                onClick={() => alert("녹음 기능은 구현 준비 중입니다. 업로드 기능을 이용해주세요!")}
-                className="w-48 h-14 rounded-2xl border border-gray-200 bg-white shadow-sm font-semibold text-gray-800 hover:bg-gray-50 transition"
+                type="button"
+                onClick={() => navigate("/recording")}
+                className="w-[98px] h-[40px] bg-white border border-[#C9DEFA] rounded-[4px] shadow-sm text-[13px] font-semibold text-black hover:bg-[#ADDCFF]/40"
               >
                 RECORD
               </button>
+            </div>
+
+            <div className="flex items-center gap-[26px]">
+              <div className="w-[32px] h-[25px] relative">
+                <div className="absolute left-0 top-[5px] w-[30px] h-[18px] border-[3px] border-[#4A8DFF] rounded-[3px]" />
+                <div className="absolute left-[4px] top-0 w-[13px] h-[8px] border-[3px] border-[#4A8DFF] border-b-0 rounded-t-[3px]" />
+              </div>
 
               <button
-                onClick={handleUploadClick}
-                className="w-48 h-14 rounded-2xl border border-gray-200 bg-white shadow-sm font-semibold text-gray-800 hover:bg-gray-50 transition"
+                type="button"
+                onClick={() => navigate("/file-upload")}
+                className="w-[98px] h-[40px] bg-white border border-[#C9DEFA] rounded-[4px] shadow-sm text-[13px] font-semibold text-black hover:bg-[#ADDCFF]/40"
               >
                 UPLOAD
               </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="audio/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
             </div>
-
-            <p className="text-xs text-gray-400 text-center leading-5 mt-6">
-              음성 파일을 업로드하거나 <br /> 바로 회의를 녹음할 수 있습니다.
-            </p>
           </div>
 
-          {/* 오른쪽 (파일 목록 - 현재는 하드코딩 상태) */}
-          <div className="rounded-3xl border border-gray-200 bg-[#F5F7FB] p-6 min-h-[360px] flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-800">업로드된 회의 파일</h3>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600">3 Files</span>
+          {/* Right search/file list */}
+          <div className="w-[270px]">
+            <div className="w-full h-[38px] bg-white border border-[#C9DEFA] rounded-[4px] flex items-center justify-between px-[14px] shadow-sm">
+              <span className="text-[14px] text-gray-400">Search...</span>
+              <span className="text-[#4A8DFF] text-[17px]">⌕</span>
             </div>
-            {/* ... 생략 (기존 디자인 유지) ... */}
+
+            <div className="w-full h-[142px] bg-white border border-[#C9DEFA] rounded-[3px] shadow-md overflow-hidden">
+              <div className="h-[30px] bg-[#EAF1FC] flex items-center px-[12px] gap-[8px] text-[13px] text-black">
+                <span className="text-[#4A8DFF]">⌕</span>
+                <span>“20260201”</span>
+              </div>
+
+              <div className="px-[13px] py-[8px] text-[13px] text-black">
+                <div className="flex gap-[9px] mb-[9px]">
+                  <div className="w-[18px] h-[18px] bg-[#ADDCFF] rounded-[3px]" />
+                  <div>
+                    <p className="font-semibold leading-[15px]">20260201</p>
+                    <p className="leading-[15px]">일요일 정기 회의</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-[9px] mb-[9px]">
+                  <div className="w-[18px] h-[18px] bg-[#C9DEFA] rounded-[3px]" />
+                  <div>
+                    <p className="font-semibold leading-[15px]">20260127</p>
+                    <p className="leading-[15px]">백엔드 역할 분배</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-[9px]">
+                  <div className="w-[18px] h-[18px] bg-[#4A8DFF] rounded-[3px]" />
+                  <div>
+                    <p className="font-semibold leading-[15px]">20260124</p>
+                    <p className="leading-[15px]">피그마 점검</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
