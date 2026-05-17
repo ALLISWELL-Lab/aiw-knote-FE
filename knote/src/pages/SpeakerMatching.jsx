@@ -23,7 +23,7 @@ function SpeakerCard({ speaker, text }) {
 function SpeakerSelectColumn({
   speaker,
   checked = true,
-  selected = "팀원 1",
+  selected = "선택",
   muted = false,
 }) {
   return (
@@ -47,7 +47,6 @@ function SpeakerSelectColumn({
         <option>정서윤</option>
         <option>임이랑</option>
         <option>강민지</option>
-
       </select>
 
       <div className="w-full border-x border-b border-[#C9DEFA] bg-white text-[13px] text-black">
@@ -113,25 +112,27 @@ function SpeakerMatching() {
               speaker="SPEAKER A"
               text={
                 <>
-                  SDT 되는거 보여주고 SDT 되는거 플러스 로딩하면 이런게 좀 중요하겠죠
+                  SDT 되는거 보여주고 SDT 되는거 플러스 로딩하면 이런게 좀
+                  중요하겠죠
                 </>
               }
             />
 
             <SpeakerCard
               speaker="SPEAKER B"
-              text={
-                <>
-                  제가 단계를 분리하는건가요?
-                </>
-              }
+              text={<>제가 단계를 분리하는건가요?</>}
             />
 
             <SpeakerCard
               speaker="SPEAKER C"
-              text={<>웨거에서 기능 테스트 하면서 거기서 이제 직접 넣은 것도 있고 그 다음에 어떤거는 디비버에다가 sql 스크립트를 써가지고 하나씩 돌려서 넣은것도 있어요</>}
+              text={
+                <>
+                  웨거에서 기능 테스트 하면서 거기서 이제 직접 넣은 것도 있고
+                  그 다음에 어떤거는 디비버에다가 sql 스크립트를 써가지고
+                  하나씩 돌려서 넣은것도 있어요
+                </>
+              }
             />
-
           </div>
         </div>
 
@@ -153,14 +154,7 @@ function SpeakerMatching() {
               selected="강민지"
               checked={true}
             />
-            
           </div>
-
-          {meetingId && (
-            <div className="absolute left-[12px] bottom-[14px] text-[12px] text-gray-500">
-              meetingId: {meetingId}
-            </div>
-          )}
 
           <div className="absolute left-0 right-0 bottom-[48px] h-px bg-[#C9DEFA]" />
 
