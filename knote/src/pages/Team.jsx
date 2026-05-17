@@ -55,10 +55,7 @@ function ProgressBar({ label, value }) {
         <span className="font-semibold">{value}%</span>
       </div>
       <div className="w-full h-[9px] bg-[#C9DEFA]">
-        <div
-          className="h-full bg-[#4A8DFF]"
-          style={{ width: `${value}%` }}
-        />
+        <div className="h-full bg-[#4A8DFF]" style={{ width: `${value}%` }} />
       </div>
     </div>
   );
@@ -126,7 +123,7 @@ function Team() {
 
                 <div className="grid grid-cols-3 gap-[12px]">
                   <div className="h-[54px] border border-[#C9DEFA] bg-white flex flex-col items-center justify-center">
-                    <p className="text-[18px] font-semibold text-black">5</p>
+                    <p className="text-[18px] font-semibold text-black">3</p>
                     <p className="text-[12px] text-black">팀원</p>
                   </div>
 
@@ -154,9 +151,9 @@ function Team() {
 
             <div className="px-[18px] py-[18px] space-y-[18px]">
               <ProgressBar label="프론트엔드" value={72} />
-              <ProgressBar label="백엔드" value={61} />
-              <ProgressBar label="기획/문서" value={80} />
-              <ProgressBar label="UI 디자인" value={68} />
+              <ProgressBar label="백엔드" value={68} />
+              <ProgressBar label="API 연동" value={61} />
+              <ProgressBar label="UI 화면 구현" value={80} />
             </div>
           </div>
         </div>
@@ -188,48 +185,30 @@ function Team() {
             </div>
 
             <MemberRow
-              initial="김"
-              name="김이화"
-              role="프론트엔드"
-              status="온라인"
-              color="#4A8DFF"
-              tags={["React", "UI", "연동"]}
-            />
-
-            <MemberRow
-              initial="박"
-              name="박백엔"
+              initial="정"
+              name="정서윤"
               role="백엔드"
               status="온라인"
-              color="#74A8FF"
+              color="#4A8DFF"
               tags={["Spring", "API", "DB"]}
             />
 
             <MemberRow
-              initial="최"
-              name="최기획"
-              role="기획"
-              status="오프라인"
-              color="#ADDCFF"
-              tags={["기획", "문서", "발표"]}
-            />
-
-            <MemberRow
-              initial="이"
-              name="이디자인"
-              role="디자인"
+              initial="강"
+              name="강민지"
+              role="백엔드"
               status="온라인"
-              color="#8DBFFF"
-              tags={["Figma", "UX", "프로토타입"]}
+              color="#74A8FF"
+              tags={["Spring", "Server", "연동"]}
             />
 
             <MemberRow
-              initial="정"
-              name="정테스트"
-              role="QA"
-              status="오프라인"
-              color="#C9DEFA"
-              tags={["테스트", "검수", "시연"]}
+              initial="임"
+              name="임이랑"
+              role="프론트엔드"
+              status="온라인"
+              color="#ADDCFF"
+              tags={["React", "UI", "화면 구현"]}
             />
           </div>
 
@@ -288,11 +267,10 @@ function Team() {
               </div>
 
               <div className="px-[16px] py-[16px] text-[13px] leading-[24px] text-black">
+                <p>ㆍ백엔드: 2명</p>
                 <p>ㆍ프론트엔드: 1명</p>
-                <p>ㆍ백엔드: 1명</p>
-                <p>ㆍ기획/문서: 1명</p>
-                <p>ㆍ디자인: 1명</p>
-                <p>ㆍQA: 1명</p>
+                <p>ㆍ전체 팀원: 3명</p>
+                <p>ㆍ현재 온라인: 3명</p>
               </div>
             </div>
           </div>
