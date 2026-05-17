@@ -44,15 +44,14 @@ function SpeakerSelectColumn({
         className="w-full h-[28px] border border-[#C9DEFA] bg-white text-[12px] px-[6px] mb-0 text-black"
       >
         <option>선택</option>
-        <option>팀원 1</option>
-        <option>팀원 2</option>
-        <option>팀원 3</option>
-        <option>팀원 4</option>
-        <option>팀원 5</option>
+        <option>정서윤</option>
+        <option>임이랑</option>
+        <option>강민지</option>
+
       </select>
 
       <div className="w-full border-x border-b border-[#C9DEFA] bg-white text-[13px] text-black">
-        {["팀원 1", "팀원 2", "팀원 3", "팀원 4", "팀원 5"].map((member) => (
+        {["정서윤", "임이랑", "강민지"].map((member) => (
           <div
             key={member}
             className={`h-[34px] flex items-center px-[8px] ${
@@ -114,8 +113,7 @@ function SpeakerMatching() {
               speaker="SPEAKER A"
               text={
                 <>
-                  자, 2월 7일 오전 10시네요. 회의를 시작해 볼까요?
-                  화면님께서 준비해 오신 것부터 볼게요.
+                  SDT 되는거 보여주고 SDT 되는거 플러스 로딩하면 이런게 좀 중요하겠죠
                 </>
               }
             />
@@ -124,21 +122,16 @@ function SpeakerMatching() {
               speaker="SPEAKER B"
               text={
                 <>
-                  네, 저는 저번에 지적해주셨던 몇 개의 화면 구성과 새 페이지
-                  제작, 몇 가지 컴포넌트를 수정해 보았어요.
+                  제가 단계를 분리하는건가요?
                 </>
               }
             />
 
             <SpeakerCard
               speaker="SPEAKER C"
-              text={<>아, 그럼 이 기능이 저렇게 나타난 거군요?</>}
+              text={<>웨거에서 기능 테스트 하면서 거기서 이제 직접 넣은 것도 있고 그 다음에 어떤거는 디비버에다가 sql 스크립트를 써가지고 하나씩 돌려서 넣은것도 있어요</>}
             />
 
-            <SpeakerCard
-              speaker="SPEAKER D"
-              text={<>네, 맞아요. 제 생각에도 그러합니다.</>}
-            />
           </div>
         </div>
 
@@ -147,25 +140,20 @@ function SpeakerMatching() {
           <div className="flex gap-[20px]">
             <SpeakerSelectColumn
               speaker="SPEAKER A"
-              selected="팀원 1"
+              selected="정서윤"
               checked={true}
             />
             <SpeakerSelectColumn
               speaker="SPEAKER B"
-              selected="팀원 2"
-              checked={true}
+              selected="임이랑"
+              checked={false}
             />
             <SpeakerSelectColumn
               speaker="SPEAKER C"
-              selected="팀원 3"
+              selected="강민지"
               checked={true}
             />
-            <SpeakerSelectColumn
-              speaker="SPEAKER D"
-              selected="선택"
-              checked={false}
-              muted
-            />
+            
           </div>
 
           {meetingId && (

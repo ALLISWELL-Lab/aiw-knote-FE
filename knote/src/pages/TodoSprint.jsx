@@ -85,7 +85,7 @@ function TodoSprint() {
 
       <div className="h-px bg-[#C9DEFA] mb-[34px]" />
 
-      <div className="w-[940px] mx-auto">
+      <div className="w-[1040px] mx-auto">
         <div className="flex justify-end mb-[12px]">
           <button
             type="button"
@@ -107,60 +107,76 @@ function TodoSprint() {
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-[14px] px-[18px] py-[18px]">
+          <div className="grid grid-cols-5 gap-[10px] px-[18px] py-[18px]">
             {/* Column 1 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[245px]">
-              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center px-[12px] text-[13px] font-semibold text-black">
-                TODO
+            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
+                1. IDEATION (기획)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
+                <KanbanCard title="AI TO-DO 추천" tag="기획" />
                 <KanbanCard
-                  title="회의 분석 결과 페이지 스크린샷 정리"
-                  tag="프론트"
+                  title="회의 기반 업무 추출 기준 정리"
+                  tag="문서"
                 />
-                <KanbanCard title="보고서 기능 흐름 설명 작성" tag="문서" />
                 <KanbanCard
-                  title="백엔드 API 응답 형식 확인"
-                  tag="백엔드"
+                  title="D-day 산정 기준 정의"
+                  tag="기획"
                   muted
                 />
               </div>
             </div>
 
             {/* Column 2 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[245px]">
-              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center px-[12px] text-[13px] font-semibold text-black">
-                IN PROGRESS
+            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
+                2. DESIGN (설계)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="회의 업로드 플로우 퍼블리싱" tag="진행중" />
-                <KanbanCard title="화자 매칭 화면 구현" tag="진행중" />
+                <KanbanCard title="프로젝트 스프린트 화면 설계" tag="UI" />
+                <KanbanCard title="TODO 담당자 매칭 화면 설계" tag="UX" />
+                <KanbanCard title="D-day 제안 테이블 설계" tag="설계" />
               </div>
             </div>
 
             {/* Column 3 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[245px]">
-              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center px-[12px] text-[13px] font-semibold text-black">
-                REVIEW
+            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
+                3. DEVELOPMENT (개발)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="회의 분석 페이지 디자인 확인" tag="검토" />
-                <KanbanCard title="피드백 페이지 문구 검토" tag="검토" />
+                <KanbanCard title="회의 업로드 플로우 구현" tag="프론트" />
+                <KanbanCard title="화자 매칭 화면 구현" tag="프론트" />
+                <KanbanCard title="API 응답 구조 연결" tag="연동" />
               </div>
             </div>
 
             {/* Column 4 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[245px]">
-              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center px-[12px] text-[13px] font-semibold text-black">
-                DONE
+            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
+                4. TESTING (검증)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="피그마 화면 구성 완료" tag="완료" />
-                <KanbanCard title="중간발표 핵심 기능 범위 확정" tag="완료" />
+                <KanbanCard title="회의 분석 결과 화면 검증" tag="QA" />
+                <KanbanCard title="D-day 제안 결과 검토" tag="검증" />
+                <KanbanCard title="피드백 화면 문구 확인" tag="검토" />
+              </div>
+            </div>
+
+            {/* Column 5 */}
+            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+              <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
+                5. LAUNCH (배포)
+              </div>
+
+              <div className="p-[10px] space-y-[10px]">
+                <KanbanCard title="최종 화면 캡처 정리" tag="보고서" />
+                <KanbanCard title="발표용 시연 흐름 정리" tag="발표" />
+                <KanbanCard title="프로젝트 결과물 제출" tag="배포" />
               </div>
             </div>
           </div>
@@ -192,7 +208,7 @@ function TodoSprint() {
 
             <DdayRow
               todo="회의 분석 결과 페이지 스크린샷 정리"
-              assignee="김이화"
+              assignee="임이랑"
               importance="높음"
               priority="높음"
               dday={1}
@@ -202,7 +218,7 @@ function TodoSprint() {
 
             <DdayRow
               todo="백엔드 API 응답 형식 확인"
-              assignee="박백엔"
+              assignee="정서윤"
               importance="높음"
               priority="중간"
               dday={2}
@@ -210,21 +226,21 @@ function TodoSprint() {
             />
 
             <DdayRow
-              todo="보고서 기능 흐름 설명 작성"
-              assignee="최기획"
-              importance="중간"
-              priority="중간"
-              dday={3}
-              reason="기본 D-day를 유지하여 안정적으로 작성 가능"
+              todo="회의 업로드 API 연동 점검"
+              assignee="강민지"
+              importance="높음"
+              priority="높음"
+              dday={1}
+              reason="회의 업로드 플로우의 핵심 기능이므로 짧은 D-day를 제안"
             />
 
             <DdayRow
-              todo="피드백 페이지 문구 검토"
-              assignee="이디자인"
-              importance="낮음"
-              priority="낮음"
-              dday={5}
-              reason="핵심 기능 연동 이후 진행해도 되는 작업으로 여유 있게 제안"
+              todo="프로젝트 스프린트 화면 캡처 정리"
+              assignee="임이랑"
+              importance="중간"
+              priority="중간"
+              dday={3}
+              reason="기본 D-day를 유지하여 안정적으로 정리 가능"
             />
           </div>
 
@@ -252,7 +268,6 @@ function TodoSprint() {
                 value="+1~2일"
                 description="핵심 플로우와 직접 연결되지 않은 작업은 더 여유 있는 D-day를 제안합니다."
               />
-
             </div>
           </div>
         </div>
