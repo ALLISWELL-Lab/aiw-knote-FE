@@ -13,7 +13,7 @@ import Todo from "./pages/Todo";
 import TodoSprint from "./pages/TodoSprint";
 import TodoMatching from "./pages/TodoMatching";
 
-import Feedback from "./pages/Feedback";
+import Feedback from "./pages/MeetingFeedback";
 import WeeklyFeedback from "./pages/WeeklyFeedback";
 
 function App() {
