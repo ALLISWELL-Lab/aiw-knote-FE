@@ -1,12 +1,98 @@
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
 
-function CalendarCell({ day, active = false, muted = false }) {
+const monthNames = [
+  "JANUARY",
+  "FEBRUARY",
+  "MARCH",
+  "APRIL",
+  "MAY",
+  "JUNE",
+  "JULY",
+  "AUGUST",
+  "SEPTEMBER",
+  "OCTOBER",
+  "NOVEMBER",
+  "DECEMBER",
+];
+
+function getMondayStartDate(date) {
+  const copiedDate = new Date(date);
+  const day = copiedDate.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+
+  copiedDate.setDate(copiedDate.getDate() + mondayOffset);
+  copiedDate.setHours(0, 0, 0, 0);
+
+  return copiedDate;
+}
+
+function isSameDate(dateA, dateB) {
+  return (
+    dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate()
+  );
+}
+
+function isDateInCurrentWeek(date, today) {
+  const weekStart = getMondayStartDate(today);
+  const weekEnd = new Date(weekStart);
+
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return date >= weekStart && date <= weekEnd;
+}
+
+function getCalendarDays(today) {
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const firstDate = new Date(year, month, 1);
+  const firstDay = firstDate.getDay();
+  const mondayStartIndex = firstDay === 0 ? 6 : firstDay - 1;
+
+  const startDate = new Date(year, month, 1 - mondayStartIndex);
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const current = new Date(startDate);
+
+    current.setDate(startDate.getDate() + index);
+    current.setHours(0, 0, 0, 0);
+
+    return {
+      date: current,
+      day: current.getDate(),
+      isCurrentMonth: current.getMonth() === month,
+      isToday: isSameDate(current, today),
+      isCurrentWeek: isDateInCurrentWeek(current, today),
+    };
+  });
+}
+
+function formatWeeklyRange(today) {
+  const weekStart = getMondayStartDate(today);
+  const weekEnd = new Date(weekStart);
+
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  const startMonth = String(weekStart.getMonth() + 1).padStart(2, "0");
+  const startDay = String(weekStart.getDate()).padStart(2, "0");
+  const endMonth = String(weekEnd.getMonth() + 1).padStart(2, "0");
+  const endDay = String(weekEnd.getDate()).padStart(2, "0");
+
+  return `${weekStart.getFullYear()}.${startMonth}.${startDay} - ${weekEnd.getFullYear()}.${endMonth}.${endDay}`;
+}
+
+function CalendarCell({ day, active = false, today = false, muted = false }) {
   return (
     <div
       className={`h-[42px] border border-[#C9DEFA] flex items-center justify-center text-[15px] ${
-        active
+        today
           ? "bg-[#4A8DFF] text-white font-semibold"
+          : active
+          ? "bg-[#ADDCFF] text-black font-semibold"
           : muted
           ? "bg-[#EAF1FC] text-gray-400"
           : "bg-white text-black"
@@ -18,6 +104,9 @@ function CalendarCell({ day, active = false, muted = false }) {
 }
 
 function WeeklyFeedback() {
+  const today = new Date();
+  const calendarDays = getCalendarDays(today);
+
   return (
     <Layout>
       {/* Breadcrumb */}
@@ -54,7 +143,9 @@ function WeeklyFeedback() {
           <div className="border border-[#C9DEFA] bg-white w-[360px] shadow-sm">
             <div className="h-[54px] flex items-center justify-between px-[28px] text-black">
               <span className="text-[28px]">‹</span>
-              <span className="text-[16px] font-semibold">2022 JANUARY</span>
+              <span className="text-[16px] font-semibold">
+                {today.getFullYear()} {monthNames[today.getMonth()]}
+              </span>
               <span className="text-[28px]">›</span>
             </div>
 
@@ -68,60 +159,25 @@ function WeeklyFeedback() {
                 </div>
               ))}
 
-              <CalendarCell day="26" muted />
-              <CalendarCell day="27" muted />
-              <CalendarCell day="28" muted />
-              <CalendarCell day="29" muted />
-              <CalendarCell day="30" muted />
-              <CalendarCell day="31" muted />
-              <CalendarCell day="1" />
-
-              <CalendarCell day="2" />
-              <CalendarCell day="3" />
-              <CalendarCell day="4" />
-              <CalendarCell day="5" />
-              <CalendarCell day="6" />
-              <CalendarCell day="7" />
-              <CalendarCell day="8" />
-
-              <CalendarCell day="9" active />
-              <CalendarCell day="10" active />
-              <CalendarCell day="11" active />
-              <CalendarCell day="12" active />
-              <CalendarCell day="13" active />
-              <CalendarCell day="14" active />
-              <CalendarCell day="15" active />
-
-              <CalendarCell day="16" />
-              <CalendarCell day="17" />
-              <CalendarCell day="18" />
-              <CalendarCell day="19" />
-              <CalendarCell day="20" />
-              <CalendarCell day="21" />
-              <CalendarCell day="22" />
-
-              <CalendarCell day="23" />
-              <CalendarCell day="24" />
-              <CalendarCell day="25" muted />
-              <CalendarCell day="26" muted />
-              <CalendarCell day="27" muted />
-              <CalendarCell day="28" muted />
-              <CalendarCell day="29" muted />
-
-              <CalendarCell day="30" />
-              <CalendarCell day="31" />
-              <CalendarCell day="1" muted />
-              <CalendarCell day="2" muted />
-              <CalendarCell day="3" muted />
-              <CalendarCell day="4" muted />
-              <CalendarCell day="5" muted />
+              {calendarDays.map((item, index) => (
+                <CalendarCell
+                  key={`${item.date.toISOString()}-${index}`}
+                  day={item.day}
+                  active={item.isCurrentWeek}
+                  today={item.isToday}
+                  muted={!item.isCurrentMonth}
+                />
+              ))}
             </div>
           </div>
 
           {/* Weekly feedback panel */}
           <div className="border border-[#C9DEFA] bg-white w-[640px] min-h-[500px] shadow-sm">
-            <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
-              ＞ AI 위클리 피드백 열람
+            <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px] text-[15px] font-semibold text-black">
+              <span> AI 위클리 피드백 열람</span>
+              <span className="text-[12px] text-gray-500 font-normal">
+                {formatWeeklyRange(today)}
+              </span>
             </div>
 
             <div className="px-[22px] py-[26px] text-[14px] leading-[26px] text-black">

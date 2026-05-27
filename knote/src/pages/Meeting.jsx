@@ -1,5 +1,20 @@
+import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import { useNavigate } from "react-router-dom";
+
+function MeetingFileItem({ color, date, title }) {
+  return (
+    <div className="flex gap-[10px] mb-[12px]">
+      <div
+        className="w-[18px] h-[18px] rounded-[3px] shrink-0"
+        style={{ backgroundColor: color }}
+      />
+      <div>
+        <p className="font-semibold leading-[15px]">{date}</p>
+        <p className="leading-[15px]">{title}</p>
+      </div>
+    </div>
+  );
+}
 
 function Meeting() {
   const navigate = useNavigate();
@@ -8,91 +23,126 @@ function Meeting() {
     <Layout>
       {/* Breadcrumb */}
       <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
+        <Link to="/" className="font-semibold hover:underline">
+          ⌂ Home
+        </Link>
         <span className="text-gray-400">/</span>
-        <span>회의</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">회의 업로드</span>
+        <span className="font-semibold">회의</span>
       </div>
 
-      <div className="h-px bg-[#C9DEFA] mb-[104px]" />
+      <div className="h-px bg-[#C9DEFA] mb-[50px]" />
 
-      {/* Main upload box */}
-      <div className="w-[760px] h-[335px] border border-[#C9DEFA] bg-white mx-auto flex items-center justify-center shadow-sm">
-        <div className="w-full flex items-center justify-center gap-[145px]">
-          {/* Left record/upload panel */}
-          <div className="w-[245px] h-[250px] border border-[#C9DEFA] bg-white px-[34px] py-[30px] shadow-sm">
-            <p className="text-[14px] text-black mb-[32px] whitespace-nowrap">
-              회의 녹음/음성 파일 업로드
-            </p>
-
-            <div className="flex items-center gap-[26px] mb-[38px]">
-              <div className="w-[28px] h-[28px] rounded-full border-[4px] border-[#4A8DFF] flex items-center justify-center">
-                <div className="w-[11px] h-[11px] rounded-full bg-[#4A8DFF]" />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => navigate("/recording")}
-                className="w-[98px] h-[40px] bg-white border border-[#C9DEFA] rounded-[4px] shadow-sm text-[13px] font-semibold text-black hover:bg-[#ADDCFF]/40"
-              >
-                RECORD
-              </button>
+      <div className="w-[980px] mx-auto">
+        <div className="grid grid-cols-[1fr_340px] gap-[34px]">
+          {/* Main upload section */}
+          <div className="border border-[#C9DEFA] bg-white shadow-sm">
+            <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+              <span className="text-[15px] font-semibold text-black">
+                회의 업로드
+              </span>
+              <span className="text-[13px] text-gray-500">
+                녹음 또는 음성 파일을 등록하세요
+              </span>
             </div>
 
-            <div className="flex items-center gap-[26px]">
-              <div className="w-[32px] h-[25px] relative">
-                <div className="absolute left-0 top-[5px] w-[30px] h-[18px] border-[3px] border-[#4A8DFF] rounded-[3px]" />
-                <div className="absolute left-[4px] top-0 w-[13px] h-[8px] border-[3px] border-[#4A8DFF] border-b-0 rounded-t-[3px]" />
-              </div>
+            <div className="h-[430px] flex items-center justify-center">
+              <div className="grid grid-cols-2 gap-[34px]">
+                {/* Record */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/recording")}
+                  className="w-[230px] h-[245px] border border-[#C9DEFA] bg-white shadow-sm hover:bg-[#ADDCFF]/35 transition flex flex-col items-center justify-center"
+                >
+                  <div className="w-[78px] h-[78px] rounded-full border-[5px] border-[#4A8DFF] flex items-center justify-center mb-[28px]">
+                    <div className="w-[26px] h-[26px] rounded-full bg-[#4A8DFF]" />
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => navigate("/file-upload")}
-                className="w-[98px] h-[40px] bg-white border border-[#C9DEFA] rounded-[4px] shadow-sm text-[13px] font-semibold text-black hover:bg-[#ADDCFF]/40"
-              >
-                UPLOAD
-              </button>
+                  <p className="text-[18px] font-semibold text-black mb-[10px]">
+                    RECORD
+                  </p>
+                  <p className="text-[13px] text-black text-center leading-[20px]">
+                    회의를 바로 녹음하고
+                    <br />
+                    분석 흐름으로 이동합니다.
+                  </p>
+                </button>
+
+                {/* Upload */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/file-upload")}
+                  className="w-[230px] h-[245px] border border-[#C9DEFA] bg-white shadow-sm hover:bg-[#ADDCFF]/35 transition flex flex-col items-center justify-center"
+                >
+                  <div className="w-[82px] h-[66px] relative mb-[34px]">
+                    <div className="absolute left-[4px] top-[18px] w-[74px] h-[42px] border-[5px] border-[#4A8DFF] rounded-[4px]" />
+                    <div className="absolute left-[14px] top-[4px] w-[32px] h-[22px] border-[5px] border-[#4A8DFF] border-b-0 rounded-t-[4px]" />
+                  </div>
+
+                  <p className="text-[18px] font-semibold text-black mb-[10px]">
+                    UPLOAD
+                  </p>
+                  <p className="text-[13px] text-black text-center leading-[20px]">
+                    저장된 회의 음성 파일을
+                    <br />
+                    업로드합니다.
+                  </p>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Right search/file list */}
-          <div className="w-[270px]">
-            <div className="w-full h-[38px] bg-white border border-[#C9DEFA] rounded-[4px] flex items-center justify-between px-[14px] shadow-sm">
-              <span className="text-[14px] text-gray-400">Search...</span>
-              <span className="text-[#4A8DFF] text-[17px]">⌕</span>
-            </div>
-
-            <div className="w-full h-[142px] bg-white border border-[#C9DEFA] rounded-[3px] shadow-md overflow-hidden">
-              <div className="h-[30px] bg-[#EAF1FC] flex items-center px-[12px] gap-[8px] text-[13px] text-black">
-                <span className="text-[#4A8DFF]">⌕</span>
-                <span>“20260201”</span>
+          {/* Right recent meeting list */}
+          <div className="space-y-[22px]">
+            <div className="border border-[#C9DEFA] bg-white shadow-sm">
+              <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
+                회의 검색
               </div>
 
-              <div className="px-[13px] py-[8px] text-[13px] text-black">
-                <div className="flex gap-[9px] mb-[9px]">
-                  <div className="w-[18px] h-[18px] bg-[#ADDCFF] rounded-[3px]" />
-                  <div>
-                    <p className="font-semibold leading-[15px]">20260201</p>
-                    <p className="leading-[15px]">일요일 정기 회의</p>
-                  </div>
+              <div className="px-[18px] py-[18px]">
+                <div className="w-full h-[38px] bg-white border border-[#C9DEFA] rounded-[4px] flex items-center justify-between px-[14px] shadow-sm">
+                  <span className="text-[14px] text-gray-400">Search...</span>
+                  <span className="text-[#4A8DFF] text-[17px]">⌕</span>
                 </div>
+              </div>
+            </div>
 
-                <div className="flex gap-[9px] mb-[9px]">
-                  <div className="w-[18px] h-[18px] bg-[#C9DEFA] rounded-[3px]" />
-                  <div>
-                    <p className="font-semibold leading-[15px]">20260127</p>
-                    <p className="leading-[15px]">백엔드 역할 분배</p>
-                  </div>
-                </div>
+            <div className="border border-[#C9DEFA] bg-white shadow-sm">
+              <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
+                최근 회의
+              </div>
 
-                <div className="flex gap-[9px]">
-                  <div className="w-[18px] h-[18px] bg-[#4A8DFF] rounded-[3px]" />
-                  <div>
-                    <p className="font-semibold leading-[15px]">20260124</p>
-                    <p className="leading-[15px]">피그마 점검</p>
-                  </div>
-                </div>
+              <div className="px-[18px] py-[16px] text-[13px] text-black">
+                <MeetingFileItem
+                  color="#ADDCFF"
+                  date="20260201"
+                  title="일요일 정기 회의"
+                />
+                <MeetingFileItem
+                  color="#C9DEFA"
+                  date="20260127"
+                  title="백엔드 역할 분배"
+                />
+                <MeetingFileItem
+                  color="#4A8DFF"
+                  date="20260124"
+                  title="피그마 점검"
+                />
+                <MeetingFileItem
+                  color="#EAF1FC"
+                  date="20260120"
+                  title="프론트 연동 회의"
+                />
+              </div>
+            </div>
+
+            <div className="border border-[#C9DEFA] bg-white shadow-sm">
+              <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
+                안내
+              </div>
+
+              <div className="px-[18px] py-[18px] text-[13px] leading-[22px] text-black">
+                회의 녹음 파일을 업로드하면 화자 매칭 후 회의 요약, 결정사항,
+                액션아이템을 확인할 수 있습니다.
               </div>
             </div>
           </div>
