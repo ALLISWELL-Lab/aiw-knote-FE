@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
 function SpeakerCard({ speaker, text }) {
   return (
@@ -93,20 +94,7 @@ function SpeakerMatching() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <Link to="/" className="font-semibold hover:underline">
-          ⌂ Home
-        </Link>
-        <span className="text-gray-400">/</span>
-        <Link to="/meeting" className="hover:underline">
-          회의
-        </Link>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">화자 매칭</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[44px]" />
+      <Breadcrumb items={["home", "meeting", "speakerMatching"]} />
 
       <div className="w-[980px] mx-auto">
         <div className="grid grid-cols-[430px_1fr] gap-[34px]">

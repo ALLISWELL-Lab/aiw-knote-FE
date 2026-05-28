@@ -16,6 +16,12 @@ import TodoMatching from "./pages/TodoMatching";
 import Feedback from "./pages/Feedback";
 import WeeklyFeedback from "./pages/WeeklyFeedback";
 
+import ErrorPage from "./pages/ErrorPage";
+import LoadingPage from "./pages/LoadingPage";
+
+import Landing from "./pages/Landing";
+import TeamOnboarding from "./pages/TeamOnboarding";
+
 function App() {
   return (
     <BrowserRouter>
@@ -36,6 +42,14 @@ function App() {
 
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/weekly-feedback" element={<WeeklyFeedback />} />
+
+        <Route path="/error" element={<ErrorPage />} />   
+        <Route path="/loading" element={<LoadingPage />} />
+        <Route path="*" element={<ErrorPage />} />
+
+        <Route path="/login" element={<Landing />} />
+        <Route path="/team-onboarding" element={<TeamOnboarding />} />
+
       </Routes>
     </BrowserRouter>
   );

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import api from "../api";
+import Breadcrumb from "../components/Breadcrumb";
 
 function SectionBox({ title, children }) {
   return (
@@ -152,20 +153,7 @@ function MeetingResult() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <Link to="/" className="font-semibold hover:underline">
-          ⌂ Home
-        </Link>
-        <span className="text-gray-400">/</span>
-        <Link to="/meeting" className="hover:underline">
-          회의
-        </Link>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">회의 분석</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[34px]" />
+      <Breadcrumb items={["home", "meeting", "meetingResult"]} />
 
       {isLoading && (
         <div className="w-[980px] h-[460px] mx-auto border border-[#C9DEFA] bg-white flex items-center justify-center text-[15px] text-black shadow-sm">

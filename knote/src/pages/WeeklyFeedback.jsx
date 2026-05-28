@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
 const monthNames = [
   "JANUARY",
@@ -109,16 +110,7 @@ function WeeklyFeedback() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>피드백</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">위클리 피드백</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[36px]" />
+      <Breadcrumb items={["home", "feedback", "weeklyFeedback"]} />
 
       <div className="w-[900px] mx-auto">
         {/* Toggle buttons */}

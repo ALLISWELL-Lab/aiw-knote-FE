@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
 function TodoSummaryCard({ title, value, description }) {
   return (
@@ -35,16 +36,7 @@ function Todo() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>투두</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">투두 메인</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[42px]" />
+      <Breadcrumb items={["home", "todo"]} />
 
       <div className="w-[920px] mx-auto">
         {/* Top buttons */}
@@ -115,17 +107,17 @@ function Todo() {
           <TodoPreviewRow
             title="회의 업로드 화면 정리하기"
             status="진행"
-            member="김이화"
+            member="임이랑"
           />
           <TodoPreviewRow
             title="STT 응답 구조 확인하기"
             status="대기"
-            member="박백엔"
+            member="정서윤"
           />
           <TodoPreviewRow
             title="발표용 시연 흐름 정리하기"
             status="완료"
-            member="최기획"
+            member="강민지"
           />
           <TodoPreviewRow
             title="액션아이템 담당자 매칭하기"

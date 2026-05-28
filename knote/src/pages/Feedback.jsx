@@ -1,19 +1,11 @@
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
 function Feedback() {
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>피드백</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">회의 피드백</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[36px]" />
+  <Breadcrumb items={["home", "feedback", "meetingFeedback"]} />
 
       <div className="w-[850px] mx-auto">
         {/* Toggle buttons */}
@@ -103,7 +95,7 @@ function Feedback() {
         {/* Detail feedback */}
         <div className="w-[370px] border border-[#C9DEFA] bg-white shadow-md">
           <div className="h-[34px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[14px] text-[14px] font-semibold text-black">
-            ＞ AI 상세 피드백 열람
+             AI 상세 피드백 열람
           </div>
 
           <div className="px-[18px] py-[22px] text-[13px] leading-[24px] text-black">

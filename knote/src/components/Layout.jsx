@@ -3,10 +3,10 @@ import { NavLink } from "react-router-dom";
 
 function UserIcon() {
   return (
-    <div className="w-[78px] h-[78px] bg-white rounded-[4px] flex items-center justify-center border border-[#000000]/30">
+    <div className="w-[78px] h-[78px] bg-white rounded-[4px] flex items-center justify-center border border-[#4A8DFF]/30">
       <div className="relative w-[48px] h-[48px]">
-        <div className="absolute left-1/2 -translate-x-1/2 top-[3px] w-[20px] h-[20px] bg-[#000000] rounded-full" />
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-[3px] w-[40px] h-[24px] bg-[#000000] rounded-t-full" />
+        <div className="absolute left-1/2 -translate-x-1/2 top-[3px] w-[20px] h-[20px] bg-[#4A8DFF] rounded-full" />
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-[3px] w-[40px] h-[24px] bg-[#4A8DFF] rounded-t-full" />
       </div>
     </div>
   );
@@ -88,7 +88,7 @@ function formatBriefingDate(date) {
 
 function RobotBriefing({ currentDate }) {
   return (
-    <div className="mt-auto bg-white w-full h-[210px] shadow-[0_4px_4px_rgba(0,0,0,0.16)] px-[18px] pt-[12px] border border-[#C9DEFA]">
+    <div className="fixed left-[34px] bottom-[42px] z-30 bg-white w-[222px] h-[210px] shadow-[0_4px_4px_rgba(0,0,0,0.16)] px-[18px] pt-[12px] border border-[#C9DEFA]">
       <div className="mb-[6px]">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
           <rect
@@ -182,24 +182,25 @@ function Layout({ children }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#EAF1FC] flex overflow-x-auto">
-      {/* Sidebar */}
-      <aside className="w-[290px] min-h-screen bg-[#ADDCFF] px-[34px] py-[42px] flex flex-col shrink-0 border-r border-[#C9DEFA]">
+    <div className="min-h-screen bg-[#EAF1FC] overflow-x-auto">
+      {/* Fixed Sidebar */}
+      <aside className="fixed left-0 top-0 z-20 w-[290px] h-screen bg-[#ADDCFF] px-[34px] py-[42px] border-r border-[#C9DEFA]">
         {/* Profile */}
-        <div className="flex gap-[26px] items-start">
+        <div className="flex gap-[22px] items-start">
           <UserIcon />
 
-          <div className="flex-1 pt-[10px]">
+          <div className="flex-1 pt-[10px] min-w-0">
             <div className="text-[15px] text-black font-semibold mb-[14px]">
-              김이화
+              정서윤
             </div>
+
             <div className="h-[2px] bg-black w-full mb-[14px]" />
 
-            <div className="flex gap-[6px]">
-              <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-[20px] text-[14px]">
+            <div className="flex flex-nowrap gap-[4px] items-center overflow-visible">
+              <span className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-none text-[12px]">
                 #백엔드
               </span>
-              <span className="bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-[20px] text-[14px]">
+              <span className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-none text-[12px]">
                 #JAVA
               </span>
             </div>
@@ -216,12 +217,12 @@ function Layout({ children }) {
           {item("/todo", "투두", "todo")}
           {item("/feedback", "피드백", "feedback")}
         </nav>
-
-        <RobotBriefing currentDate={currentTime} />
       </aside>
 
+      <RobotBriefing currentDate={currentTime} />
+
       {/* Main */}
-      <main className="flex-1 min-w-[1500px] bg-[#EAF1FC]">
+      <main className="ml-[290px] min-w-[1500px] min-h-screen bg-[#EAF1FC]">
         {/* Header */}
         <header className="h-[70px] w-full bg-[#ADDCFF] border-b border-[#C9DEFA] shadow-[0_4px_5px_rgba(0,0,0,0.16)] flex items-center justify-between px-[40px]">
           <div className="flex items-center gap-[24px] text-black">
@@ -239,7 +240,7 @@ function Layout({ children }) {
                 strokeWidth="2"
               />
               <path
-                d="M10 19C10.4 20.2 11.2 21 12 21C12.8 21 13.6 20.2 14 19"
+                d="M10 19C10.4 20.2 11 21 12 21C13 21 13.6 20.2 14 19"
                 stroke="black"
                 strokeWidth="2"
               />

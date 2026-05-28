@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
 function MeetingFileItem({ color, date, title }) {
   return (
@@ -21,16 +22,7 @@ function Meeting() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <Link to="/" className="font-semibold hover:underline">
-          ⌂ Home
-        </Link>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">회의</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[50px]" />
+  <Breadcrumb items={["home", "meeting"]} />
 
       <div className="w-[980px] mx-auto">
         <div className="grid grid-cols-[1fr_340px] gap-[34px]">

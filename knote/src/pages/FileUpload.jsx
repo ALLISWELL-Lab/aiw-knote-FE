@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import api from "../api";
+import Breadcrumb from "../components/Breadcrumb";
 
 function FileUpload() {
   const navigate = useNavigate();
@@ -66,24 +67,7 @@ function FileUpload() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <Link to="/" className="font-semibold hover:underline">
-          ⌂ Home
-        </Link>
-        <span className="text-gray-400">/</span>
-        <Link to="/meeting" className="hover:underline">
-          회의
-        </Link>
-        <span className="text-gray-400">/</span>
-        <Link to="/meeting" className="hover:underline">
-          회의 업로드
-        </Link>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">음성 파일</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[44px]" />
+      <Breadcrumb items={["home", "meeting", "meetingUpload", "fileUpload"]} />
 
       <div className="w-[980px] mx-auto">
         <div className="grid grid-cols-[1fr_300px] gap-[34px]">
