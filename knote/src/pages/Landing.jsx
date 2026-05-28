@@ -35,7 +35,6 @@ function GoogleIcon() {
         </style>
   
         <div className="w-full flex flex-col items-center translate-y-[-6px]">
-          {/* Logo Image */}
           <img
             src="/images/knote-logo.png"
             alt="KNOTE"
@@ -43,7 +42,6 @@ function GoogleIcon() {
             draggable="false"
           />
   
-          {/* Ready Text */}
           <h2
             className="text-[39px] font-bold text-black mb-[150px] tracking-[-1px] text-center"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
@@ -51,7 +49,6 @@ function GoogleIcon() {
             Ready To Init?
           </h2>
   
-          {/* Google OAuth Button */}
           <button
             type="button"
             onClick={handleGoogleLogin}

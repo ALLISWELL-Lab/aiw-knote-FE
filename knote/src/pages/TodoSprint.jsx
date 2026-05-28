@@ -1,19 +1,34 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
-function KanbanCard({ title, tag, muted = false }) {
+function KanbanCard({ title, tag, dueDate, dday, muted = false }) {
   return (
     <div
-      className={`w-full min-h-[52px] border border-[#C9DEFA] bg-white px-[10px] py-[8px] text-[13px] text-black shadow-sm ${
+      className={`w-full min-h-[86px] border border-[#C9DEFA] bg-white px-[10px] py-[9px] text-[13px] text-black shadow-sm flex flex-col justify-between ${
         muted ? "opacity-70" : ""
       }`}
     >
-      <p className="leading-[18px]">{title}</p>
-      {tag && (
-        <span className="inline-block mt-[6px] text-[11px] px-[5px] py-[1px] bg-[#EAF1FC] text-black border border-[#C9DEFA]">
-          {tag}
+      <div>
+        <p className="leading-[18px]">{title}</p>
+
+        {tag && (
+          <span className="inline-block mt-[7px] text-[11px] px-[6px] py-[1px] bg-[#EAF1FC] text-black border border-[#C9DEFA] rounded-[2px]">
+            {tag}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between mt-[10px]">
+        <span className="h-[21px] px-[7px] bg-white border border-[#C9DEFA] rounded-full text-[11px] text-gray-600 flex items-center gap-[4px]">
+          <span className="text-[12px]">◷</span>
+          {dueDate}
         </span>
-      )}
+
+        <span className="h-[21px] px-[8px] bg-[#ADDCFF] border border-[#C9DEFA] rounded-full text-[11px] font-semibold text-black flex items-center">
+          {dday}
+        </span>
+      </div>
     </div>
   );
 }
@@ -74,29 +89,19 @@ function TodoSprint() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>투두</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">프로젝트 스프린트</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[34px]" />
+      <Breadcrumb items={["home", "todo", "todoSprint"]} />
 
       <div className="w-[1040px] mx-auto">
         <div className="flex justify-end mb-[12px]">
           <button
             type="button"
             onClick={() => navigate("/todo")}
-            className="w-[72px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black"
+            className="w-[72px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black hover:bg-[#EAF1FC]"
           >
             돌아가기
           </button>
         </div>
 
-        {/* Top project board */}
         <div className="border border-[#C9DEFA] bg-white mb-[30px] shadow-sm">
           <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
             <span className="text-[15px] font-semibold text-black">
@@ -108,83 +113,145 @@ function TodoSprint() {
           </div>
 
           <div className="grid grid-cols-5 gap-[10px] px-[18px] py-[18px]">
-            {/* Column 1 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+            <div className="border border-[#C9DEFA] bg-white min-h-[332px]">
               <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
                 1. IDEATION (기획)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="AI TO-DO 추천" tag="기획" />
+                <KanbanCard
+                  title="AI TO-DO 추천"
+                  tag="기획"
+                  dueDate="2026.05.29"
+                  dday="D-1"
+                />
                 <KanbanCard
                   title="회의 기반 업무 추출 기준 정리"
                   tag="문서"
+                  dueDate="2026.05.30"
+                  dday="D-2"
                 />
                 <KanbanCard
                   title="D-day 산정 기준 정의"
                   tag="기획"
+                  dueDate="2026.05.31"
+                  dday="D-3"
                   muted
                 />
               </div>
             </div>
 
-            {/* Column 2 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+            <div className="border border-[#C9DEFA] bg-white min-h-[332px]">
               <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
                 2. DESIGN (설계)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="프로젝트 스프린트 화면 설계" tag="UI" />
-                <KanbanCard title="TODO 담당자 매칭 화면 설계" tag="UX" />
-                <KanbanCard title="D-day 제안 테이블 설계" tag="설계" />
+                <KanbanCard
+                  title="프로젝트 스프린트 화면 설계"
+                  tag="UI"
+                  dueDate="2026.06.01"
+                  dday="D-4"
+                />
+                <KanbanCard
+                  title="TODO 담당자 매칭 화면 설계"
+                  tag="UX"
+                  dueDate="2026.06.02"
+                  dday="D-5"
+                />
+                <KanbanCard
+                  title="D-day 제안 테이블 설계"
+                  tag="설계"
+                  dueDate="2026.06.02"
+                  dday="D-5"
+                />
               </div>
             </div>
 
-            {/* Column 3 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+            <div className="border border-[#C9DEFA] bg-white min-h-[332px]">
               <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
                 3. DEVELOPMENT (개발)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="회의 업로드 플로우 구현" tag="프론트" />
-                <KanbanCard title="화자 매칭 화면 구현" tag="프론트" />
-                <KanbanCard title="API 응답 구조 연결" tag="연동" />
+                <KanbanCard
+                  title="회의 업로드 플로우 구현"
+                  tag="프론트"
+                  dueDate="2026.06.03"
+                  dday="D-6"
+                />
+                <KanbanCard
+                  title="화자 매칭 화면 구현"
+                  tag="프론트"
+                  dueDate="2026.06.04"
+                  dday="D-7"
+                />
+                <KanbanCard
+                  title="API 응답 구조 연결"
+                  tag="연동"
+                  dueDate="2026.06.04"
+                  dday="D-7"
+                />
               </div>
             </div>
 
-            {/* Column 4 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+            <div className="border border-[#C9DEFA] bg-white min-h-[332px]">
               <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
                 4. TESTING (검증)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="회의 분석 결과 화면 검증" tag="QA" />
-                <KanbanCard title="D-day 제안 결과 검토" tag="검증" />
-                <KanbanCard title="피드백 화면 문구 확인" tag="검토" />
+                <KanbanCard
+                  title="회의 분석 결과 화면 검증"
+                  tag="QA"
+                  dueDate="2026.06.05"
+                  dday="D-8"
+                />
+                <KanbanCard
+                  title="D-day 제안 결과 검토"
+                  tag="검증"
+                  dueDate="2026.06.05"
+                  dday="D-8"
+                />
+                <KanbanCard
+                  title="피드백 화면 문구 확인"
+                  tag="검토"
+                  dueDate="2026.06.06"
+                  dday="D-9"
+                />
               </div>
             </div>
 
-            {/* Column 5 */}
-            <div className="border border-[#C9DEFA] bg-white min-h-[260px]">
+            <div className="border border-[#C9DEFA] bg-white min-h-[332px]">
               <div className="h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] flex items-center justify-center px-[8px] text-[13px] font-semibold text-black">
                 5. LAUNCH (배포)
               </div>
 
               <div className="p-[10px] space-y-[10px]">
-                <KanbanCard title="최종 화면 캡처 정리" tag="보고서" />
-                <KanbanCard title="발표용 시연 흐름 정리" tag="발표" />
-                <KanbanCard title="프로젝트 결과물 제출" tag="배포" />
+                <KanbanCard
+                  title="최종 화면 캡처 정리"
+                  tag="보고서"
+                  dueDate="2026.06.07"
+                  dday="D-10"
+                />
+                <KanbanCard
+                  title="발표용 시연 흐름 정리"
+                  tag="발표"
+                  dueDate="2026.06.08"
+                  dday="D-11"
+                />
+                <KanbanCard
+                  title="프로젝트 결과물 제출"
+                  tag="배포"
+                  dueDate="2026.06.09"
+                  dday="D-12"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom AI D-day proposal */}
         <div className="grid grid-cols-[1fr_300px] gap-[24px]">
-          {/* D-day table */}
           <div className="border border-[#C9DEFA] bg-white shadow-sm">
             <div className="h-[38px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[16px] text-[14px] font-semibold text-black">
               <span>AI TODO D-day 제안</span>
@@ -244,7 +311,6 @@ function TodoSprint() {
             />
           </div>
 
-          {/* Rule card */}
           <div className="border border-[#C9DEFA] bg-white shadow-sm">
             <div className="h-[38px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[16px] text-[14px] font-semibold text-black">
               D-day 산정 기준

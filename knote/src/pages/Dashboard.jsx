@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
 
 const monthNames = [
@@ -79,31 +80,136 @@ function CalendarCell({ day, active = false, muted = false }) {
   );
 }
 
+function NoticeWriteModal({ onClose }) {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  const handleSubmit = () => {
+    // 현재는 하드코딩/캡처용 UI라 저장 동작만 닫기로 처리
+    setTitle("");
+    setContent("");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+      <div className="w-[430px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
+        <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+          <span className="text-[15px] font-semibold text-black">
+            공지 작성
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[18px] text-black leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="px-[20px] py-[18px]">
+          <label className="block text-[13px] font-semibold text-black mb-[8px]">
+            제목
+          </label>
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="공지 제목을 입력하세요"
+            className="w-full h-[36px] border border-[#C9DEFA] bg-white px-[10px] text-[13px] text-black outline-none mb-[16px]"
+          />
+
+          <label className="block text-[13px] font-semibold text-black mb-[8px]">
+            내용
+          </label>
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder="팀원에게 공유할 공지 내용을 입력하세요"
+            className="w-full h-[120px] border border-[#C9DEFA] bg-white px-[10px] py-[9px] text-[13px] text-black outline-none resize-none"
+          />
+        </div>
+
+        <div className="h-[54px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-end gap-[10px] px-[18px]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-[56px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="w-[56px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
+          >
+            등록
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PermissionModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+      <div className="w-[320px] bg-white border border-[#C9DEFA] shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+        <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
+          권한 안내
+        </div>
+
+        <div className="px-[20px] py-[26px] text-[14px] text-black text-center">
+          팀장 전용 권한입니다.
+        </div>
+
+        <div className="h-[52px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-center">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-[64px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const today = new Date();
   const calendarDays = getCalendarDays(today);
 
-  // 드롭다운 상태 관리 토글 스테이트
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("전체");
+  const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+
+  // 팀장 화면 확인 시 true, 일반 팀원 화면 확인 시 false로 바꾸면 돼.
+  const isTeamLeader = true;
+
   const teamMembers = ["정서윤", "임이랑", "강민지", "전체"];
+
+  const handleNoticeClick = () => {
+    if (isTeamLeader) {
+      setShowNoticeModal(true);
+      return;
+    }
+
+    setShowPermissionModal(true);
+  };
 
   return (
     <Layout>
-      {/* 💡 상단 영역을 본문 너비인 w-[980px] mx-auto 상자 안에 똑같이 맞춰 가둡니다 */}
-      <div className="w-[980px] mx-auto text-black flex flex-col">
-        
-        {/* 상단 레이아웃 라인 - [홈 타이틀]과 [진행률 바]가 선 위에서 자연스럽게 양 끝 정렬 */}
-        <div className="w-full flex items-end justify-between mb-[18px]">
-          {/* 1. 홈 타이틀 */}
-          <div className="flex items-center gap-[10px] text-[14px] font-semibold pb-[2px]">
-            <span>⌂ Home</span>
+      <div className="w-[980px] mx-auto text-black">
+        {/* Breadcrumb + Progress */}
+        <div className="w-full flex items-start justify-between mb-[18px]">
+          <div className="flex items-center gap-[10px] text-[14px]">
+            <Link to="/" className="font-semibold hover:underline">
+              ⌂ Home
+            </Link>
           </div>
 
-          {/* 2. 프로젝트 진행률 바 
-            오른쪽 우측 본문의 달력 세트 너비(w-[400px])와 완벽히 동일한 크기로 설정하여 
-            아래에 배치될 공지 작성 버튼의 우측 끝과 수직 칼정렬을 이룹니다.
-          */}
           <div className="w-[400px] flex flex-col flex-shrink-0">
             <div className="flex items-center justify-between text-[13px] mb-[6px]">
               <span>프로젝트 진행률</span>
@@ -116,29 +222,20 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 구분 가로선 (언제나 선 위에 진행률 바가 유지됩니다) */}
       <div className="h-px bg-[#C9DEFA] w-full mb-[38px]" />
 
-      {/* 💡 본문 그리드 프레임 (동일한 w-[980px] mx-auto 정가운데 정렬) */}
       <div className="w-[980px] mx-auto text-black">
-        
-        {/* 본문 좌우 레이아웃 */}
         <div className="w-full flex justify-between items-start gap-[40px]">
-          
-          {/* ================= [LEFT SIDE CONTENT] ================= */}
+          {/* Left */}
           <div className="flex flex-col gap-[28px] flex-1">
-            
-            {/* 프로젝트 바 & 드롭다운 라인 (h-[34px]) */}
             <div className="flex items-center gap-[12px] w-full h-[34px]">
-              {/* 프로젝트 셀렉터 */}
               <div className="w-[320px] h-[34px] border border-[#C9DEFA] bg-white flex items-center justify-between px-[10px] text-[13px] font-medium shadow-sm">
                 <span className="truncate">PROJECT: ALL IS WELL</span>
                 <span className="text-[9px] text-slate-400">▼</span>
               </div>
 
-              {/* 커스텀 드롭다운 */}
               <div className="relative w-[110px] flex-shrink-0">
-                <div 
+                <div
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="h-[34px] border border-[#C9DEFA] bg-white rounded-[4px] flex items-center justify-between px-[10px] text-[13px] cursor-pointer shadow-sm select-none"
                 >
@@ -169,15 +266,13 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* 중단: TODO 리스트 박스 */}
             <div className="w-[320px] h-[220px] bg-white border border-[#C9DEFA] px-[18px] py-[14px] shadow-sm rounded-[2px]">
-              <TodoRow text="팀원 A TO DO LIST (D-9)" />
-              <TodoRow text="팀원 B TO DO LIST (D-9)" />
-              <TodoRow text="팀원 C TO DO LIST (D-9)" />
-              <TodoRow text="팀원 D TO DO LIST (D-9)" checked />
+              <TodoRow text="임이랑 TO DO LIST (D-1)" checked />
+              <TodoRow text="정서윤 TO DO LIST (D-2)" />
+              <TodoRow text="강민지 TO DO LIST (D-1)" />
+              <TodoRow text="공통 TO DO LIST (D-3)" />
             </div>
 
-            {/* 하단: 포스트잇 NOTE */}
             <div className="w-[320px] rotate-[-1.5deg] mt-[6px]">
               <div className="relative w-full h-[165px] bg-[#FFF1A8] px-[18px] py-[16px] text-[14px] text-[#4A3B12] shadow-[3px_5px_10px_rgba(0,0,0,0.1)] border border-[#EAE2B7]">
                 <div className="absolute top-[-8px] left-[50%] -translate-x-1/2 w-[70px] h-[16px] bg-[#ADDCFF]/80 rotate-[2deg] rounded-[1px] shadow-sm" />
@@ -195,36 +290,37 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* ================= [RIGHT SIDE CONTENT] ================= */}
-          {/* 대형화된 달력과 일정 리스트 세트 (w-[400px]) */}
+          {/* Right */}
           <div className="w-[400px] flex-col flex-shrink-0">
-            
-            {/* 💡 공지 작성 버튼: 선 아랫동네에서 수평 정렬을 유지하며 우측 끝 배치 */}
             <div className="w-full h-[34px] flex items-center justify-end mb-[24px]">
-              <button className="w-[76px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black font-medium hover:bg-[#EAF1FC] active:bg-[#ADDCFF]/40 transition-colors shadow-sm">
+              <button
+                type="button"
+                onClick={handleNoticeClick}
+                className="w-[76px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black font-medium hover:bg-[#EAF1FC] active:bg-[#ADDCFF]/40 transition-colors shadow-sm"
+              >
                 공지 작성
               </button>
             </div>
 
-            {/* 달력 본체 헤더 */}
             <div className="flex items-center justify-between mb-[14px] px-[6px]">
-              <span className="text-[20px] cursor-pointer select-none hover:text-gray-400">‹</span>
+              <span className="text-[20px] text-gray-400 select-none">‹</span>
               <span className="text-[14px] font-bold tracking-wide">
                 {today.getFullYear()} {monthNames[today.getMonth()]}
               </span>
-              <span className="text-[20px] cursor-pointer select-none hover:text-gray-400">›</span>
+              <span className="text-[20px] text-gray-400 select-none">›</span>
             </div>
 
-            {/* 요일 그리드 */}
             <div className="grid grid-cols-7 text-[11px] text-gray-500 mb-[6px] font-semibold text-center">
               {["M", "T", "W", "TH", "F", "S", "SU"].map((day) => (
-                <div key={day} className="h-[20px] flex items-center justify-center">
+                <div
+                  key={day}
+                  className="h-[20px] flex items-center justify-center"
+                >
                   {day}
                 </div>
               ))}
             </div>
 
-            {/* 달력 일자판 */}
             <div className="grid grid-cols-7 bg-white border border-[#C9DEFA] rounded-[2px] overflow-hidden shadow-sm">
               {calendarDays.map((item, index) => (
                 <CalendarCell
@@ -236,7 +332,6 @@ function Dashboard() {
               ))}
             </div>
 
-            {/* 일정 리스트 박스 */}
             <div className="mt-[20px]">
               <div className="h-[34px] bg-white border border-[#C9DEFA] flex items-center px-[12px] text-[13px] font-semibold rounded-t-[2px]">
                 <span className="mr-[6px] text-[9px] text-slate-400">▼</span>
@@ -248,9 +343,16 @@ function Dashboard() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
+
+      {showNoticeModal && (
+        <NoticeWriteModal onClose={() => setShowNoticeModal(false)} />
+      )}
+
+      {showPermissionModal && (
+        <PermissionModal onClose={() => setShowPermissionModal(false)} />
+      )}
     </Layout>
   );
 }

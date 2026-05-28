@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 
 function TodoSummaryCard({ title, value, description }) {
   return (
@@ -22,7 +23,7 @@ function TodoSummaryCard({ title, value, description }) {
 
 function TodoPreviewRow({ title, status, member }) {
   return (
-    <div className="grid grid-cols-[1fr_72px_80px] h-[38px] border-b border-[#C9DEFA] text-[13px] text-black">
+    <div className="grid grid-cols-[1fr_72px_70px] h-[38px] border-b border-[#C9DEFA] text-[13px] text-black">
       <div className="flex items-center px-[12px]">{title}</div>
       <div className="flex items-center justify-center">{status}</div>
       <div className="flex items-center justify-center">{member}</div>
@@ -35,16 +36,7 @@ function Todo() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>투두</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">투두 메인</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[42px]" />
+      <Breadcrumb items={["home", "todo"]} />
 
       <div className="w-[920px] mx-auto">
         {/* Top buttons */}
@@ -58,7 +50,7 @@ function Todo() {
               프로젝트 스프린트
             </p>
             <p className="text-[13px] text-black">
-              프로젝트 진행 보드와 AI D-day 제안을 확인합니다.
+              프로젝트 진행 보드와 AI 일정 제안을 확인합니다.
             </p>
           </button>
 
@@ -106,7 +98,7 @@ function Todo() {
             </span>
           </div>
 
-          <div className="grid grid-cols-[1fr_72px_80px] h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] text-[13px] text-black font-semibold">
+          <div className="grid grid-cols-[1fr_72px_70px] h-[34px] border-b border-[#C9DEFA] bg-[#ADDCFF] text-[13px] text-black font-semibold">
             <div className="flex items-center px-[12px]">TODO</div>
             <div className="flex items-center justify-center">상태</div>
             <div className="flex items-center justify-center">담당자</div>
@@ -123,8 +115,8 @@ function Todo() {
             member="정서윤"
           />
           <TodoPreviewRow
-            title="회의 업로드 API 연동 점검하기"
-            status="진행"
+            title="발표용 시연 흐름 정리하기"
+            status="완료"
             member="강민지"
           />
           <TodoPreviewRow
