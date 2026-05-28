@@ -10,7 +10,6 @@ function SectionBox({ title, children }) {
       <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
         <span className="text-[15px] font-semibold text-black">{title}</span>
       </div>
-
       <div className="px-[20px] py-[18px] text-[14px] leading-[28px] text-black">
         {children}
       </div>
@@ -29,7 +28,6 @@ function normalizeTranscript(transcript) {
           text: item,
         };
       }
-
       return {
         speaker:
           item.speaker ||
@@ -72,7 +70,6 @@ function normalizeActionItems(actionItems) {
           done: false,
         };
       }
-
       return {
         id: item.actionItemId || item.actionItemsId || item.id || index,
         title: item.title || item.content || item.task || "액션아이템",
@@ -99,6 +96,7 @@ function MeetingResult() {
   const [actionItems, setActionItems] = useState([]);
   const [isLoading, setIsLoading] = useState(Boolean(meetingId));
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false); // 다운로드 진행 상태 관리 추가
 
   useEffect(() => {
     const fetchMeetingResult = async () => {
@@ -132,6 +130,44 @@ function MeetingResult() {
 
     fetchMeetingResult();
   }, [meetingId]);
+
+  // ------------------------------------
+  // 🌟 [핵심 추가] 백엔드 STT 텍스트 다운로드 API 연동 함수
+  // ------------------------------------
+  const handleDownloadTranscript = async () => {
+    if (!meetingId) return;
+
+    try {
+      setIsDownloading(true);
+
+      // 백엔드 downloadMeetingStt API 호출 (바이너리 데이터를 받기 위해 responseType 추가 필수)
+      const response = await api.get(`/meetings/${meetingId}/download`, {
+        responseType: "blob", 
+      });
+
+      // 가상 DOM 링크 생성을 통한 다운로드 트리거 실행
+      const blob = new Blob([response.data], { type: "text/plain;charset=utf-8" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      // 다운로드될 텍스트 파일명 세팅 (백엔드 헤더 설정과 동기화)
+      link.setAttribute("download", `meeting_${meetingId}_stt.txt`); 
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      // 다운로드 완료 후 가상 메모리 해제 및 가상 DOM 노드 삭제
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+    } catch (error) {
+      console.error("STT 원문 다운로드 실패:", error);
+      alert("파일 다운로드에 실패했습니다. 백엔드 서버 상태를 확인해주세요.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const meetingTitle =
     meeting?.agenda ||
@@ -177,12 +213,19 @@ function MeetingResult() {
           {/* Left column */}
           <div>
             <div className="flex items-center justify-between mb-[18px]">
-              <h2 className="text-[20px] font-semibold text-black">
+              <h2 className="text-[20px] font-semibold text-black truncate max-w-[320px]">
                 {meetingTitle}
               </h2>
 
-              <button className="w-[84px] h-[30px] bg-[#4A8DFF] text-white text-[13px] rounded-[3px]">
-                다운로드
+              {/* 💡 [수정] 클릭 시 백엔드 파일 다운로드를 트리거하도록 onClick 이벤트 바인딩 */}
+              <button 
+                onClick={handleDownloadTranscript}
+                disabled={isDownloading}
+                className={`w-[84px] h-[30px] bg-[#4A8DFF] text-white text-[13px] rounded-[3px] font-medium transition-colors hover:bg-[#4A8DFF]/90 active:bg-[#4A8DFF]/80 ${
+                  isDownloading ? "opacity-60 cursor-not-allowed" : ""
+                }`}
+              >
+                {isDownloading ? "받는 중..." : "다운로드"}
               </button>
             </div>
 
@@ -224,7 +267,7 @@ function MeetingResult() {
                     {actionItems.map((item) => (
                       <label
                         key={item.id}
-                        className="flex items-center justify-between gap-[10px]"
+                        className="flex items-center justify-between gap-[10px] cursor-pointer"
                       >
                         <div className="flex items-center gap-[10px]">
                           <input
