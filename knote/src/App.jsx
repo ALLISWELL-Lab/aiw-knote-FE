@@ -21,7 +21,6 @@ import WeeklyFeedback from "./pages/WeeklyFeedback";
 import ErrorPage from "./pages/ErrorPage";
 import LoadingPage from "./pages/LoadingPage";
 
-import Landing from "./pages/Landing";
 import TeamOnboarding from "./pages/TeamOnboarding";
 
 function App() {
