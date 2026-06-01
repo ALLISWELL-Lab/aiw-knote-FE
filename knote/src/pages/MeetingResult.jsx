@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import api from "../api";
+import Breadcrumb from "../components/Breadcrumb";
 
 function SectionBox({ title, children }) {
   return (
     <div className="w-full border border-[#C9DEFA] bg-white shadow-sm">
       <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
-        <span className="text-[15px] font-semibold text-black">
-          {title}
-        </span>
+        <span className="text-[15px] font-semibold text-black">{title}</span>
       </div>
       <div className="px-[20px] py-[18px] text-[14px] leading-[28px] text-black">
         {children}
@@ -190,25 +189,16 @@ function MeetingResult() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>회의</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">회의 분석</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] mb-[34px]" />
+      <Breadcrumb items={["home", "meeting", "meetingResult"]} />
 
       {isLoading && (
-        <div className="w-[850px] h-[420px] mx-auto border border-[#C9DEFA] bg-white flex items-center justify-center text-[15px] text-black shadow-sm">
+        <div className="w-[980px] h-[460px] mx-auto border border-[#C9DEFA] bg-white flex items-center justify-center text-[15px] text-black shadow-sm">
           회의 분석 결과를 불러오는 중입니다...
         </div>
       )}
 
       {!isLoading && errorMessage && (
-        <div className="w-[850px] h-[420px] mx-auto border border-[#C9DEFA] bg-white flex flex-col items-center justify-center text-center shadow-sm">
+        <div className="w-[980px] h-[460px] mx-auto border border-[#C9DEFA] bg-white flex flex-col items-center justify-center text-center shadow-sm">
           <p className="text-[15px] font-semibold text-black mb-[12px]">
             결과 조회 실패
           </p>
@@ -219,7 +209,7 @@ function MeetingResult() {
       )}
 
       {!isLoading && !errorMessage && meeting && (
-        <div className="grid grid-cols-[440px_1fr] gap-[34px]">
+        <div className="w-[980px] mx-auto grid grid-cols-[450px_1fr] gap-[34px]">
           {/* Left column */}
           <div>
             <div className="flex items-center justify-between mb-[18px]">
@@ -239,7 +229,6 @@ function MeetingResult() {
               </button>
             </div>
 
-            {/* Decision box */}
             <div className="w-full border border-[#C9DEFA] bg-white mb-[28px] shadow-sm">
               <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
                 <span className="text-[15px] font-semibold text-black">
@@ -247,7 +236,7 @@ function MeetingResult() {
                 </span>
               </div>
 
-              <div className="px-[20px] py-[18px] text-[14px] leading-[30px] text-black min-h-[130px]">
+              <div className="px-[20px] py-[18px] text-[14px] leading-[30px] text-black min-h-[150px]">
                 {Array.isArray(decisions) && decisions.length > 0 ? (
                   decisions.map((decision, index) => (
                     <p key={index}>
@@ -265,7 +254,6 @@ function MeetingResult() {
               </div>
             </div>
 
-            {/* AI Todo */}
             <div className="w-full border border-[#C9DEFA] bg-white shadow-sm">
               <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
                 <span className="text-[15px] font-semibold text-black">
@@ -273,7 +261,7 @@ function MeetingResult() {
                 </span>
               </div>
 
-              <div className="px-[20px] py-[18px]">
+              <div className="px-[20px] py-[18px] min-h-[170px]">
                 {actionItems.length > 0 ? (
                   <div className="space-y-[12px] text-[14px] text-black">
                     {actionItems.map((item) => (
@@ -307,18 +295,14 @@ function MeetingResult() {
 
           {/* Right column */}
           <div>
-            {/* Summary meta */}
             <div className="border border-[#C9DEFA] bg-white mb-[18px] shadow-sm">
-              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
                 <span className="text-[15px] font-semibold text-black">
                   회의 요약
                 </span>
-                <span className="text-[13px] text-gray-500">
-                  meetingId: {meetingId}
-                </span>
               </div>
 
-              <div className="grid grid-cols-2 border-b border-[#C9DEFA]">
+              <div className="grid grid-cols-[140px_1fr] border-b border-[#C9DEFA]">
                 <div className="h-[40px] border-r border-[#C9DEFA] flex items-center px-[16px] text-[14px] text-black">
                   회의 ID
                 </div>
@@ -327,7 +311,7 @@ function MeetingResult() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2">
+              <div className="grid grid-cols-[140px_1fr]">
                 <div className="h-[40px] border-r border-[#C9DEFA] flex items-center px-[16px] text-[14px] text-black">
                   회의명
                 </div>
@@ -347,15 +331,14 @@ function MeetingResult() {
               )}
             </SectionBox>
 
-            {/* STT segment area */}
-            <div className="border border-[#C9DEFA] bg-white h-[300px] overflow-hidden mt-[18px] shadow-sm">
+            <div className="border border-[#C9DEFA] bg-white h-[310px] overflow-hidden mt-[18px] shadow-sm">
               <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
                 <span className="text-[15px] font-semibold text-black">
                   STT 변환 결과
                 </span>
               </div>
 
-              <div className="h-[258px] overflow-y-auto px-[20px] py-[18px] text-[14px] text-black leading-[24px]">
+              <div className="h-[268px] overflow-y-auto px-[20px] py-[18px] text-[14px] text-black leading-[24px]">
                 {transcriptList.length > 0 ? (
                   transcriptList.map((segment, index) => (
                     <div key={index} className="mb-[22px]">
