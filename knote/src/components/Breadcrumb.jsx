@@ -15,6 +15,7 @@ const breadcrumbMap = {
   feedback: { label: "피드백", to: "/feedback" },
   meetingFeedback: { label: "회의 피드백" },
   weeklyFeedback: { label: "위클리 피드백", to: "/weekly-feedback" },
+  myPage: { label: "마이페이지" },
 };
 
 function Breadcrumb({ items = [] }) {
