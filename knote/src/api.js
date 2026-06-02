@@ -6,6 +6,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // 로그인 상태 유지 위해 쿠키 포함
+  withCredentials: true,
 });
 
 export default api;

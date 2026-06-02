@@ -23,8 +23,9 @@ function GoogleIcon() {
   
   function Landing() {
     const handleGoogleLogin = () => {
-      window.location.href = "/oauth2/authorization/google";
-    };
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  window.location.href = `${baseUrl}/oauth2/authorization/google`;
+};
   
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#ADDCFF] via-[#C9DAFF] to-[#CFC3FF] flex items-center justify-center overflow-hidden">
