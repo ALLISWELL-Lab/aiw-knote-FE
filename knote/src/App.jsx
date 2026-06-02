@@ -22,6 +22,7 @@ import ErrorPage from "./pages/ErrorPage";
 import LoadingPage from "./pages/LoadingPage";
 
 import TeamOnboarding from "./pages/TeamOnboarding";
+import MyPage from "./pages/MyPage";
 
 function App() {
   return (
@@ -58,6 +59,8 @@ function App() {
 
         <Route path="/login" element={<Landing />} />
         <Route path="/team-onboarding" element={<TeamOnboarding />} />
+
+        <Route path="/mypage" element={<MyPage />} />
 
       </Routes>
     </BrowserRouter>
