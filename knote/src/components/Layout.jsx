@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function UserIcon() {
   return (
@@ -86,9 +86,13 @@ function formatBriefingDate(date) {
   return `${year}. ${month}. ${day}`;
 }
 
-function RobotBriefing({ currentDate }) {
+function RobotBriefing({ currentDate, isVisible }) {
   return (
-    <div className="fixed left-[34px] bottom-[42px] z-30 bg-white w-[222px] h-[210px] shadow-[0_4px_4px_rgba(0,0,0,0.16)] px-[18px] pt-[12px] border border-[#C9DEFA]">
+    <div
+      className={`fixed left-[34px] bottom-[42px] z-30 bg-white w-[250px] h-[210px] shadow-[0_4px_4px_rgba(0,0,0,0.16)] px-[18px] pt-[12px] border border-[#C9DEFA] transition-transform duration-300 ${
+        isVisible ? "translate-x-0" : "translate-x-[-330px]"
+      }`}
+    >
       <div className="mb-[6px]">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
           <rect
@@ -132,11 +136,13 @@ function RobotBriefing({ currentDate }) {
 
       <div className="relative bg-[#F8FBFF] border border-[#C9DEFA] rounded-[3px] shadow-sm text-[14px] text-black">
         <div className="absolute left-[-11px] top-[55px] w-0 h-0 border-y-[10px] border-y-transparent border-r-[11px] border-r-[#F8FBFF]" />
-        <div className="h-[39px] border-b border-[#C9DEFA] flex items-center px-[12px] text-black font-semibold">
+
+        <div className="h-[39px] border-b border-[#C9DEFA] flex items-center px-[10px] text-black font-semibold text-[12px] whitespace-nowrap">
           {formatBriefingDate(currentDate)} 데일리 브리핑
         </div>
+
         <div className="px-[12px] py-[12px] leading-[22px]">
-          업무 이슈율이 훌륭합니다.
+          업무 이수율이 훌륭합니다.
           <br />이 속도를 유지해 보아요!
         </div>
       </div>
@@ -152,8 +158,70 @@ function formatHeaderTime(date) {
   });
 }
 
+function NoticeAlertModal({ notices, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+      <div className="w-[430px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]">
+        <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
+          공지 알림
+        </div>
+
+        <div className="px-[22px] py-[22px] max-h-[320px] overflow-y-auto text-black">
+          {notices.length > 0 ? (
+            <div className="space-y-[14px]">
+              {notices.map((notice) => (
+                <div
+                  key={notice.id}
+                  className="border border-[#C9DEFA] bg-[#F8FBFF] px-[14px] py-[12px]"
+                >
+                  <div className="flex items-center justify-between mb-[8px]">
+                    <p className="text-[14px] font-semibold text-black">
+                      {notice.title}
+                    </p>
+
+                    {!notice.read && (
+                      <span className="w-[7px] h-[7px] bg-red-500 rounded-full" />
+                    )}
+                  </div>
+
+                  <p className="text-[13px] leading-[21px] text-black mb-[8px]">
+                    {notice.content}
+                  </p>
+
+                  <p className="text-[11px] text-gray-500">
+                    {notice.createdAt}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-[110px] flex items-center justify-center text-[14px] text-gray-500">
+              등록된 공지가 없습니다.
+            </div>
+          )}
+        </div>
+
+        <div className="h-[56px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-end px-[18px]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-[56px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Layout({ children }) {
+  const navigate = useNavigate();
+
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [notices, setNotices] = useState([]);
+  const [showNoticeModal, setShowNoticeModal] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -162,6 +230,46 @@ function Layout({ children }) {
 
     return () => clearInterval(timer);
   }, []);
+
+  const loadNotices = () => {
+    const savedNotices = JSON.parse(
+      localStorage.getItem("knoteNotices") || "[]"
+    );
+    setNotices(savedNotices);
+  };
+
+  useEffect(() => {
+    loadNotices();
+
+    const handleNoticeUpdate = () => {
+      loadNotices();
+    };
+
+    window.addEventListener("knote-notice-updated", handleNoticeUpdate);
+    window.addEventListener("storage", handleNoticeUpdate);
+
+    return () => {
+      window.removeEventListener("knote-notice-updated", handleNoticeUpdate);
+      window.removeEventListener("storage", handleNoticeUpdate);
+    };
+  }, []);
+
+  const hasUnreadNotice = notices.some((notice) => !notice.read);
+
+  const handleNoticeBellClick = () => {
+    setShowNoticeModal(true);
+  };
+
+  const handleCloseNoticeModal = () => {
+    const readNotices = notices.map((notice) => ({
+      ...notice,
+      read: true,
+    }));
+
+    localStorage.setItem("knoteNotices", JSON.stringify(readNotices));
+    setNotices(readNotices);
+    setShowNoticeModal(false);
+  };
 
   const menuClass = ({ isActive }) =>
     `w-[104px] h-[30px] rounded-[3px] text-[15px] flex items-center justify-center border transition ${
@@ -175,6 +283,7 @@ function Layout({ children }) {
       <div className="w-[28px] flex justify-center">
         <MenuIcon type={iconType} />
       </div>
+
       <NavLink to={to} end={end} className={menuClass}>
         {label}
       </NavLink>
@@ -183,9 +292,11 @@ function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#EAF1FC] overflow-x-auto">
-      {/* Fixed Sidebar */}
-      <aside className="fixed left-0 top-0 z-20 w-[290px] h-screen bg-[#ADDCFF] px-[34px] py-[42px] border-r border-[#C9DEFA]">
-        {/* Profile */}
+      <aside
+        className={`fixed left-0 top-0 z-20 w-[290px] h-screen bg-[#ADDCFF] px-[34px] py-[42px] border-r border-[#C9DEFA] transition-transform duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "translate-x-[-290px]"
+        }`}
+      >
         <div className="flex gap-[22px] items-start">
           <UserIcon />
 
@@ -209,7 +320,6 @@ function Layout({ children }) {
 
         <div className="h-px bg-black/25 mt-[58px] mb-[52px]" />
 
-        {/* Menu Box */}
         <nav className="w-full bg-[#4A8DFF] shadow-[0_4px_4px_rgba(0,0,0,0.18)] px-[36px] py-[34px] flex flex-col gap-[23px]">
           {item("/", "홈", "home", true)}
           {item("/team", "팀", "team")}
@@ -219,53 +329,95 @@ function Layout({ children }) {
         </nav>
       </aside>
 
-      <RobotBriefing currentDate={currentTime} />
+      <RobotBriefing currentDate={currentTime} isVisible={isSidebarOpen} />
 
-      {/* Main */}
-      <main className="ml-[290px] min-w-[1500px] min-h-screen bg-[#EAF1FC]">
-        {/* Header */}
+      <main
+        className={`min-w-[1500px] min-h-screen bg-[#EAF1FC] transition-all duration-300 ${
+          isSidebarOpen ? "ml-[290px]" : "ml-0"
+        }`}
+      >
         <header className="h-[70px] w-full bg-[#ADDCFF] border-b border-[#C9DEFA] shadow-[0_4px_5px_rgba(0,0,0,0.16)] flex items-center justify-between px-[40px]">
           <div className="flex items-center gap-[24px] text-black">
-            <span className="text-[26px] leading-none">≡</span>
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen((prev) => !prev)}
+              className="text-[26px] leading-none hover:text-[#4A8DFF] transition-colors"
+              aria-label="사이드바 열기/닫기"
+            >
+              ≡
+            </button>
+
             <span className="text-[17px] font-semibold">
               {formatHeaderTime(currentTime)}
             </span>
           </div>
 
-          <div className="flex items-center gap-[22px]">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M6 17H18L16.5 15.5V11C16.5 8 14.7 6 12 6C9.3 6 7.5 8 7.5 11V15.5L6 17Z"
-                stroke="black"
-                strokeWidth="2"
-              />
-              <path
-                d="M10 19C10.4 20.2 11 21 12 21C13 21 13.6 20.2 14 19"
-                stroke="black"
-                strokeWidth="2"
-              />
-            </svg>
+          <div className="flex items-center gap-[18px]">
+            <button
+              type="button"
+              onClick={() => navigate("/team-onboarding")}
+              className="h-[30px] px-[12px] bg-white border border-[#C9DEFA] rounded-full text-[13px] font-semibold text-black hover:bg-[#EAF1FC] transition"
+            >
+              팀 온보딩
+            </button>
 
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <circle
-                cx="12"
-                cy="8"
-                r="3.5"
-                stroke="black"
-                strokeWidth="2"
-              />
-              <path
-                d="M5 20C5.8 16.5 8.3 14.5 12 14.5C15.7 14.5 18.2 16.5 19 20"
-                stroke="black"
-                strokeWidth="2"
-              />
-            </svg>
+            <button
+              type="button"
+              onClick={handleNoticeBellClick}
+              className="relative w-[28px] h-[28px] flex items-center justify-center"
+              aria-label="공지 알림 확인"
+            >
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6 17H18L16.5 15.5V11C16.5 8 14.7 6 12 6C9.3 6 7.5 8 7.5 11V15.5L6 17Z"
+                  stroke="black"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M10 19C10.4 20.2 11 21 12 21C13 21 13.6 20.2 14 19"
+                  stroke="black"
+                  strokeWidth="2"
+                />
+              </svg>
+
+              {hasUnreadNotice && (
+                <span className="absolute right-[2px] top-[2px] w-[8px] h-[8px] bg-red-500 rounded-full border border-white" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/mypage")}
+              className="w-[28px] h-[28px] flex items-center justify-center"
+              aria-label="마이페이지로 이동"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="8"
+                  r="3.5"
+                  stroke="black"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M5 20C5.8 16.5 8.3 14.5 12 14.5C15.7 14.5 18.2 16.5 19 20"
+                  stroke="black"
+                  strokeWidth="2"
+                />
+              </svg>
+            </button>
           </div>
         </header>
 
-        {/* Content */}
         <div className="px-[40px] pt-[42px] pb-[38px]">{children}</div>
       </main>
+
+      {showNoticeModal && (
+        <NoticeAlertModal
+          notices={notices}
+          onClose={handleCloseNoticeModal}
+        />
+      )}
     </div>
   );
 }

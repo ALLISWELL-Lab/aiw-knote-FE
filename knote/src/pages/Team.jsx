@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -10,6 +11,7 @@ function ModalShell({ title, children, width = "w-[390px]", onClose }) {
       >
         <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
           <span className="text-[15px] font-semibold text-black">{title}</span>
+
           {onClose && (
             <button
               type="button"
@@ -85,19 +87,105 @@ function ConfirmModal({
   );
 }
 
-function ProjectCreateModal({ onClose }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [teamName, setTeamName] = useState("팀 선택");
+function InviteCodeModal({ teamName, inviteCode, onClose }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteCode);
+      setCopied(true);
+    } catch (error) {
+      console.error("초대코드 복사 실패:", error);
+      setCopied(false);
+      alert("복사에 실패했습니다. 초대코드를 직접 복사해 주세요.");
+    }
+  };
 
   return (
-    <ModalShell title="프로젝트 생성" width="w-[520px]" onClose={onClose}>
+    <ModalShell title="초대 코드 조회" width="w-[430px]" onClose={onClose}>
+      <div className="px-[26px] py-[28px] text-black">
+        <p className="text-[14px] font-semibold mb-[14px]">{teamName}</p>
+
+        <div className="h-[46px] border border-[#C9DEFA] bg-[#F8FBFF] flex items-center justify-between px-[14px]">
+          <span className="text-[18px] font-semibold tracking-[1px] text-[#4A8DFF]">
+            {inviteCode}
+          </span>
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="h-[28px] px-[10px] bg-white border border-[#C9DEFA] text-[13px] text-black hover:bg-[#EAF1FC]"
+          >
+            복사하기
+          </button>
+        </div>
+
+        {copied && (
+          <p className="text-[12px] text-[#4A8DFF] mt-[10px]">
+            초대코드가 복사되었습니다.
+          </p>
+        )}
+      </div>
+
+      <div className="h-[56px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-end px-[18px]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-[64px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
+        >
+          확인
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
+
+function ProjectCreateModal({ teams, selectedTeamId, onClose, onCreate }) {
+  const [projectName, setProjectName] = useState("");
+  const [detail, setDetail] = useState("");
+  const [role, setRole] = useState("");
+  const [dueDate, setDueDate] = useState("2026-06-05");
+  const [teamId, setTeamId] = useState(selectedTeamId);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const selectedTeam = teams.find((team) => team.id === teamId);
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return "2026. 06. 05";
+
+    const [year, month, day] = dateValue.split("-");
+    return `${year}. ${month}. ${day}`;
+  };
+
+  const handleCreate = () => {
+    if (!projectName.trim()) {
+      alert("프로젝트명을 입력해 주세요.");
+      return;
+    }
+
+    onCreate({
+      teamId,
+      project: {
+        id: Date.now(),
+        name: projectName,
+        dueDate: formatDate(dueDate),
+        detail: detail || "새로 추가된 프로젝트",
+        role: role || "공동 개발",
+      },
+    });
+  };
+
+  return (
+    <ModalShell title="프로젝트 생성" width="w-[540px]" onClose={onClose}>
       <div className="grid grid-cols-2 gap-[14px] px-[22px] py-[20px]">
         <div>
           <label className="block text-[13px] font-semibold text-black mb-[8px]">
             프로젝트명
           </label>
           <input
-            defaultValue="데이터베이스 01분반 팀프로젝트"
+            value={projectName}
+            onChange={(event) => setProjectName(event.target.value)}
+            placeholder="프로젝트명을 입력하세요"
             className="w-full h-[36px] border border-[#C9DEFA] px-[10px] text-[13px] text-black outline-none"
           />
         </div>
@@ -107,7 +195,9 @@ function ProjectCreateModal({ onClose }) {
             세부사항
           </label>
           <input
-            defaultValue="회의에서 이어진 팀프로젝트"
+            value={detail}
+            onChange={(event) => setDetail(event.target.value)}
+            placeholder="프로젝트 설명"
             className="w-full h-[36px] border border-[#C9DEFA] px-[10px] text-[13px] text-black outline-none"
           />
         </div>
@@ -117,7 +207,9 @@ function ProjectCreateModal({ onClose }) {
             본인 담당 역할 설정
           </label>
           <input
-            defaultValue="공동 개발"
+            value={role}
+            onChange={(event) => setRole(event.target.value)}
+            placeholder="예: 프론트엔드"
             className="w-full h-[36px] border border-[#C9DEFA] px-[10px] text-[13px] text-black outline-none"
           />
         </div>
@@ -127,22 +219,14 @@ function ProjectCreateModal({ onClose }) {
             프로젝트 마감 기한
           </label>
           <input
-            defaultValue="2026. 06. 05"
+            type="date"
+            value={dueDate}
+            onChange={(event) => setDueDate(event.target.value)}
             className="w-full h-[36px] border border-[#C9DEFA] px-[10px] text-[13px] text-black outline-none"
           />
         </div>
 
-        <div>
-          <label className="block text-[13px] font-semibold text-black mb-[8px]">
-            개별 프로젝트 이름 설정
-          </label>
-          <input
-            defaultValue="자바 싫어!"
-            className="w-full h-[36px] border border-[#C9DEFA] px-[10px] text-[13px] text-black outline-none"
-          />
-        </div>
-
-        <div className="relative">
+        <div className="col-span-2 relative">
           <label className="block text-[13px] font-semibold text-black mb-[8px]">
             팀 선택
           </label>
@@ -151,27 +235,27 @@ function ProjectCreateModal({ onClose }) {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="w-full h-[36px] border border-[#C9DEFA] bg-white px-[10px] text-[13px] text-black flex items-center justify-between"
           >
-            {teamName}
+            {selectedTeam?.name || "팀 선택"}
             <span className="text-[10px]">▼</span>
           </button>
 
           {isDropdownOpen && (
             <div className="absolute left-0 right-0 top-[68px] z-20 border border-[#C9DEFA] bg-white text-[13px] text-black shadow-sm">
-              {["졸프 03 세얼간이", "데이터베이스 2팀", "캡스톤 03팀"].map(
-                (team) => (
-                  <button
-                    key={team}
-                    type="button"
-                    onClick={() => {
-                      setTeamName(team);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full h-[34px] text-left px-[10px] hover:bg-[#EAF1FC]"
-                  >
-                    {team}
-                  </button>
-                )
-              )}
+              {teams.map((team) => (
+                <button
+                  key={team.id}
+                  type="button"
+                  onClick={() => {
+                    setTeamId(team.id);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full h-[34px] text-left px-[10px] hover:bg-[#EAF1FC] ${
+                    teamId === team.id ? "bg-[#ADDCFF]/60 font-semibold" : ""
+                  }`}
+                >
+                  {team.name}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -187,7 +271,7 @@ function ProjectCreateModal({ onClose }) {
         </button>
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleCreate}
           className="w-[56px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
         >
           생성
@@ -220,15 +304,17 @@ function TeamCard({ team, active, onClick }) {
   );
 }
 
-function ProjectRow({ name, dueDate, onClick }) {
+function ProjectRow({ project, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full h-[38px] border-b border-[#C9DEFA] flex items-center justify-between px-[12px] text-[13px] text-black hover:bg-[#EAF1FC]"
+      className="w-full min-h-[42px] border-b border-[#C9DEFA] flex items-center justify-between gap-[14px] px-[12px] text-[13px] text-black hover:bg-[#EAF1FC]"
     >
-      <span>{name}</span>
-      <span className="text-[12px] text-gray-500">{dueDate} 종료 ›</span>
+      <span className="text-left leading-[18px]">{project.name}</span>
+      <span className="text-[12px] text-gray-500 whitespace-nowrap">
+        {project.dueDate} 종료 ›
+      </span>
     </button>
   );
 }
@@ -299,8 +385,10 @@ function MemberPanel({ member, isLeader, onDelegate }) {
 }
 
 function Team() {
+  const navigate = useNavigate();
+
   const [view, setView] = useState("list");
-  const [selectedTeamId, setSelectedTeamId] = useState(2);
+  const [selectedTeamId, setSelectedTeamId] = useState(1);
   const [activeModal, setActiveModal] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [delegateTarget, setDelegateTarget] = useState(null);
@@ -312,6 +400,7 @@ function Team() {
       desc: "캡스톤디자인과창업프로젝트A 03팀 세얼간이",
       role: "팀장 담당",
       memberCount: 3,
+      inviteCode: "CAPSTONE03B",
     },
     {
       id: 2,
@@ -319,21 +408,62 @@ function Team() {
       desc: "데이터베이스 수업 팀프로젝트",
       role: "팀원 담당",
       memberCount: 3,
+      inviteCode: "DBTEAM2026",
     },
     {
       id: 3,
-      name: "캡스톤 03팀",
-      desc: "AI 회의록 관리 서비스 프로젝트",
+      name: "소프트웨어융합창의설계 4조",
+      desc: "소프트웨어융합창의설계 4조",
       role: "팀원 담당",
       memberCount: 3,
+      inviteCode: "SWDESIGN04",
     },
   ];
 
-  const projects = [
-    { id: 1, name: "데베 플젝 1", dueDate: "2026. 06. 22" },
-    { id: 2, name: "데베 과제 1", dueDate: "2026. 06. 22" },
-    { id: 3, name: "데베 과제 2", dueDate: "2026. 06. 22" },
-  ];
+  const [projectsByTeam, setProjectsByTeam] = useState({
+    1: [
+      {
+        id: 101,
+        name: "캡스톤디자인과창업프로젝트 A",
+        dueDate: "2026. 06. 15",
+        detail: "1학기 캡스톤 프로젝트",
+      },
+      {
+        id: 102,
+        name: "캡스톤디자인과창업프로젝트 B",
+        dueDate: "2026. 06. 22",
+        detail: "현재 대시보드와 연결된 프로젝트",
+      },
+    ],
+    2: [
+      {
+        id: 201,
+        name: "데베 플젝 1",
+        dueDate: "2026. 06. 22",
+        detail: "데이터베이스 팀프로젝트",
+      },
+      {
+        id: 202,
+        name: "데베 과제 1",
+        dueDate: "2026. 06. 22",
+        detail: "데이터베이스 과제",
+      },
+      {
+        id: 203,
+        name: "데베 과제 2",
+        dueDate: "2026. 06. 22",
+        detail: "데이터베이스 과제",
+      },
+    ],
+    3: [
+      {
+        id: 301,
+        name: "소프트웨어융합창의설계 4조",
+        dueDate: "2026. 06. 22",
+        detail: "소프트웨어융합창의설계 프로젝트",
+      },
+    ],
+  });
 
   const members = [
     {
@@ -366,6 +496,7 @@ function Team() {
   ];
 
   const selectedTeam = teams.find((team) => team.id === selectedTeamId);
+  const selectedProjects = projectsByTeam[selectedTeamId] || [];
 
   const handleDeleteTeam = () => {
     if (selectedTeam.memberCount > 1) {
@@ -374,6 +505,29 @@ function Team() {
     }
 
     setActiveModal("deleteConfirm");
+  };
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setActiveModal("moveProject");
+  };
+
+  const handleMoveProject = () => {
+    setActiveModal(null);
+
+    // 현재 구현된 대시보드를 캡스톤디자인과창업프로젝트 B 기준으로 사용.
+    // 프로젝트별 상세 라우트가 생기면 navigate(`/projects/${selectedProject.id}`) 형태로 교체 가능.
+    navigate("/");
+  };
+
+  const handleCreateProject = ({ teamId, project }) => {
+    setProjectsByTeam((prev) => ({
+      ...prev,
+      [teamId]: [...(prev[teamId] || []), project],
+    }));
+
+    setSelectedTeamId(teamId);
+    setActiveModal(null);
   };
 
   const handleDelegate = (member) => {
@@ -388,12 +542,12 @@ function Team() {
       {view === "list" && (
         <div className="w-[980px] mx-auto">
           <div className="grid grid-cols-[360px_1fr] gap-[34px]">
-            {/* Team list */}
             <div className="border border-[#C9DEFA] bg-white shadow-sm">
               <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
                 <span className="text-[15px] font-semibold text-black">
                   팀 리스트
                 </span>
+
                 <button
                   type="button"
                   onClick={() => setActiveModal("inviteCode")}
@@ -415,7 +569,6 @@ function Team() {
               </div>
             </div>
 
-            {/* Project list */}
             <div className="border border-[#C9DEFA] bg-white shadow-sm">
               <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
                 <div>
@@ -430,17 +583,12 @@ function Team() {
                 <div className="flex gap-[8px]">
                   <button
                     type="button"
-                    className="w-[64px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black hover:bg-[#EAF1FC]"
-                  >
-                    팀 수정
-                  </button>
-                  <button
-                    type="button"
                     onClick={handleDeleteTeam}
                     className="w-[64px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black hover:bg-[#FFF0F0]"
                   >
                     팀 삭제
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setActiveModal("inviteCode")}
@@ -453,17 +601,19 @@ function Team() {
 
               <div className="px-[18px] py-[18px]">
                 <div className="border border-[#C9DEFA] bg-white mb-[18px]">
-                  {projects.map((project) => (
-                    <ProjectRow
-                      key={project.id}
-                      name={project.name}
-                      dueDate={project.dueDate}
-                      onClick={() => {
-                        setSelectedProject(project);
-                        setActiveModal("moveProject");
-                      }}
-                    />
-                  ))}
+                  {selectedProjects.length > 0 ? (
+                    selectedProjects.map((project) => (
+                      <ProjectRow
+                        key={project.id}
+                        project={project}
+                        onClick={() => handleProjectClick(project)}
+                      />
+                    ))
+                  ) : (
+                    <div className="h-[80px] flex items-center justify-center text-[13px] text-gray-500">
+                      등록된 프로젝트가 없습니다.
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -480,7 +630,7 @@ function Team() {
                     onClick={() => setView("members")}
                     className="h-[32px] px-[14px] bg-[#4A8DFF] text-white text-[13px]"
                   >
-                    팀 선택
+                    팀원 관리
                   </button>
                 </div>
               </div>
@@ -496,9 +646,11 @@ function Team() {
               ㆍ팀은 여러 개 보유할 수 있으며, 각 팀 안에서 여러 프로젝트를
               관리할 수 있습니다.
               <br />
+              ㆍ프로젝트를 클릭하면 해당 프로젝트 대시보드로 이동할 수 있습니다.
+              <br />
               ㆍ팀 삭제는 팀장을 제외한 팀원이 모두 탈퇴한 경우에만 가능합니다.
               <br />
-              ㆍ팀 선택 후 팀원 관리 화면에서 팀장 위임을 진행할 수 있습니다.
+              ㆍ팀원 관리 화면에서 팀장 위임을 진행할 수 있습니다.
             </div>
           </div>
         </div>
@@ -528,7 +680,7 @@ function Team() {
           <div className="grid grid-cols-[360px_1fr] gap-[34px]">
             <div className="border border-[#C9DEFA] bg-white shadow-sm">
               <div className="h-[44px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
-                팀 프로젝트
+                팀 리스트
               </div>
 
               <div className="px-[14px] py-[14px]">
@@ -589,17 +741,9 @@ function Team() {
       )}
 
       {activeModal === "inviteCode" && (
-        <AlertModal
-          title="초대 코드 조회"
-          message={
-            <>
-              {selectedTeam.name} 초대 코드
-              <br />
-              <span className="text-[18px] font-semibold text-[#4A8DFF]">
-                LDI983CVD2
-              </span>
-            </>
-          }
+        <InviteCodeModal
+          teamName={selectedTeam.name}
+          inviteCode={selectedTeam.inviteCode}
           onClose={() => setActiveModal(null)}
         />
       )}
@@ -618,12 +762,17 @@ function Team() {
           }
           confirmText="이동"
           onCancel={() => setActiveModal(null)}
-          onConfirm={() => setActiveModal(null)}
+          onConfirm={handleMoveProject}
         />
       )}
 
       {activeModal === "projectCreate" && (
-        <ProjectCreateModal onClose={() => setActiveModal(null)} />
+        <ProjectCreateModal
+          teams={teams}
+          selectedTeamId={selectedTeamId}
+          onClose={() => setActiveModal(null)}
+          onCreate={handleCreateProject}
+        />
       )}
 
       {activeModal === "delegateConfirm" && delegateTarget && (

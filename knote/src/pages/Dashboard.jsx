@@ -84,8 +84,41 @@ function NoticeWriteModal({ onClose }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
+  const formatNoticeDate = () => {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hour = String(now.getHours()).padStart(2, "0");
+    const minute = String(now.getMinutes()).padStart(2, "0");
+
+    return `${year}. ${month}. ${day} ${hour}:${minute}`;
+  };
+
   const handleSubmit = () => {
-    // 현재는 하드코딩/캡처용 UI라 저장 동작만 닫기로 처리
+    if (!title.trim() || !content.trim()) {
+      alert("공지 제목과 내용을 모두 입력해 주세요.");
+      return;
+    }
+
+    const newNotice = {
+      id: Date.now(),
+      title: title.trim(),
+      content: content.trim(),
+      createdAt: formatNoticeDate(),
+      read: false,
+    };
+
+    const previousNotices = JSON.parse(
+      localStorage.getItem("knoteNotices") || "[]"
+    );
+
+    const updatedNotices = [newNotice, ...previousNotices];
+
+    localStorage.setItem("knoteNotices", JSON.stringify(updatedNotices));
+    window.dispatchEvent(new Event("knote-notice-updated"));
+
     setTitle("");
     setContent("");
     onClose();
@@ -185,9 +218,7 @@ function Dashboard() {
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
-  // 팀장 화면 확인 시 true, 일반 팀원 화면 확인 시 false로 바꾸면 돼.
   const isTeamLeader = true;
-
   const teamMembers = ["정서윤", "임이랑", "강민지", "전체"];
 
   const handleNoticeClick = () => {
@@ -202,7 +233,6 @@ function Dashboard() {
   return (
     <Layout>
       <div className="w-[980px] mx-auto text-black">
-        {/* Breadcrumb + Progress */}
         <div className="w-full flex items-start justify-between mb-[18px]">
           <div className="flex items-center gap-[10px] text-[14px]">
             <Link to="/" className="font-semibold hover:underline">
@@ -226,11 +256,10 @@ function Dashboard() {
 
       <div className="w-[980px] mx-auto text-black">
         <div className="w-full flex justify-between items-start gap-[40px]">
-          {/* Left */}
           <div className="flex flex-col gap-[28px] flex-1">
             <div className="flex items-center gap-[12px] w-full h-[34px]">
               <div className="w-[320px] h-[34px] border border-[#C9DEFA] bg-white flex items-center justify-between px-[10px] text-[13px] font-medium shadow-sm">
-                <span className="truncate">PROJECT: ALL IS WELL</span>
+                <span className="truncate">PROJECT: 캡스톤디자인과창업프로젝트 B</span>
                 <span className="text-[9px] text-slate-400">▼</span>
               </div>
 
@@ -290,7 +319,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Right */}
           <div className="w-[400px] flex-col flex-shrink-0">
             <div className="w-full h-[34px] flex items-center justify-end mb-[24px]">
               <button
