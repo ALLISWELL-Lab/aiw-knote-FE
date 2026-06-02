@@ -46,7 +46,7 @@ const DEFAULT_TODOS = [
 function CompleteModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
-      <div className="w-[430px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]">
+      <div className="w-[430px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
         <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
           매칭 완료
         </div>

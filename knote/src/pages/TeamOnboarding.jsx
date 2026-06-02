@@ -282,7 +282,7 @@ function TeamOnboarding() {
         <img
           src="/images/knote-logo.png"
           alt="KNOTE"
-          className="w-[590px] h-auto object-contain mb-[60px] select-none translate-x-[70px]"
+          className="w-[590px] h-auto object-contain mb-[60px] select-none"
           draggable="false"
         />
 

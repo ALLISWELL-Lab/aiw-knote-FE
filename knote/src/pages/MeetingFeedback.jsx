@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
+import Breadcrumb from "../components/Breadcrumb";
 // import api from "../api"; // 💡 영상 촬영을 위해 실제 API 대신 하드코딩 데이터를 사용합니다.
 
 function MeetingFeedback() {
@@ -81,16 +82,7 @@ function MeetingFeedback() {
 
   return (
     <Layout>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[10px] text-[14px] text-black mb-[18px]">
-        <span className="font-semibold">⌂ Home</span>
-        <span className="text-gray-400">/</span>
-        <span>피드백</span>
-        <span className="text-gray-400">/</span>
-        <span className="font-semibold">회의 피드백</span>
-      </div>
-
-      <div className="h-px bg-[#C9DEFA] w-full mb-[36px]" />
+      <Breadcrumb items={["home", "feedback", "meetingFeedback"]} />
 
       <div className="w-[850px] mx-auto text-black">
         {/* Toggle buttons */}

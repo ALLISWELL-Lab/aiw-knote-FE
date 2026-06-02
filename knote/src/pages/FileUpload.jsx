@@ -12,6 +12,7 @@ function FileUpload() {
   const [fileName, setFileName] = useState("파일을 선택해 주세요");
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleUploadButtonClick = () => {
     if (isUploading) return;
@@ -27,6 +28,23 @@ function FileUpload() {
     setFileName(file.name);
     setErrorMessage("");
   };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setFileName(file.name);
+    setErrorMessage("");
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => setIsDragging(false);
 
   const handleSubmit = async () => {
     if (!selectedFile) {
@@ -84,7 +102,16 @@ function FileUpload() {
 
             <div className="h-[430px] flex items-center justify-center gap-[52px]">
               {/* Drop area */}
-              <div className="w-[260px] h-[260px] border border-dashed border-[#C9DEFA] bg-[#F8FBFF] flex flex-col items-center justify-center">
+              <div
+                className={`w-[260px] h-[260px] border-2 border-dashed flex flex-col items-center justify-center transition-colors ${
+                  isDragging
+                    ? "border-[#4A8DFF] bg-[#ADDCFF]/20"
+                    : "border-[#C9DEFA] bg-[#F8FBFF]"
+                }`}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+              >
                 <button
                   type="button"
                   onClick={handleUploadButtonClick}

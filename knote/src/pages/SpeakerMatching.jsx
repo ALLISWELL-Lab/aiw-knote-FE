@@ -25,7 +25,6 @@ function SpeakerSelectColumn({
   speaker,
   checked = true,
   selected = "선택",
-  muted = false,
 }) {
   return (
     <div className="w-[125px]">
@@ -42,28 +41,13 @@ function SpeakerSelectColumn({
 
       <select
         defaultValue={selected}
-        className="w-full h-[30px] border border-[#C9DEFA] bg-white text-[12px] px-[6px] mb-0 text-black"
+        className="w-full h-[34px] border border-[#C9DEFA] bg-white text-[13px] px-[6px] text-black rounded-[2px]"
       >
-        <option>선택</option>
+        <option value="">선택</option>
         <option>정서윤</option>
         <option>임이랑</option>
         <option>강민지</option>
       </select>
-
-      <div className="w-full border-x border-b border-[#C9DEFA] bg-white text-[13px] text-black">
-        {["정서윤", "임이랑", "강민지"].map((member) => (
-          <div
-            key={member}
-            className={`h-[36px] flex items-center px-[8px] ${
-              member === selected && !muted
-                ? "bg-[#ADDCFF] text-black font-semibold"
-                : ""
-            }`}
-          >
-            {member}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
