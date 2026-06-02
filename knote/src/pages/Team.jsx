@@ -7,7 +7,7 @@ function ModalShell({ title, children, width = "w-[390px]", onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
       <div
-        className={`${width} bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]`}
+        className={`${width} bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]`}
       >
         <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
           <span className="text-[15px] font-semibold text-black">{title}</span>

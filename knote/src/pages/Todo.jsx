@@ -21,11 +21,23 @@ function TodoSummaryCard({ title, value, description }) {
   );
 }
 
+const STATUS_STYLE = {
+  진행: "bg-[#ADDCFF] text-black border-[#8BCBFF]",
+  완료: "bg-[#D1FAE5] text-green-700 border-green-200",
+  대기: "bg-white text-gray-500 border-[#C9DEFA]",
+  매칭: "bg-[#FFF7CD] text-yellow-700 border-yellow-200",
+};
+
 function TodoPreviewRow({ title, status, member }) {
+  const badgeClass = STATUS_STYLE[status] ?? "bg-white text-gray-500 border-[#C9DEFA]";
   return (
     <div className="grid grid-cols-[1fr_72px_70px] h-[38px] border-b border-[#C9DEFA] text-[13px] text-black">
       <div className="flex items-center px-[12px]">{title}</div>
-      <div className="flex items-center justify-center">{status}</div>
+      <div className="flex items-center justify-center">
+        <span className={`h-[22px] px-[8px] rounded-full border text-[12px] flex items-center font-medium ${badgeClass}`}>
+          {status}
+        </span>
+      </div>
       <div className="flex items-center justify-center">{member}</div>
     </div>
   );
