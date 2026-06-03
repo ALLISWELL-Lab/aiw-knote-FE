@@ -88,7 +88,7 @@ function TeamCreateModal({ onClose, onComplete }) {
               본인 이름 설정
             </label>
             <input
-              defaultValue="정서윤"
+              placeholder="Name"
               className="w-full h-[40px] border border-[#C9DEFA] bg-white px-[11px] text-[14px] text-black outline-none focus:border-[#4A8DFF]"
             />
           </div>
@@ -98,7 +98,7 @@ function TeamCreateModal({ onClose, onComplete }) {
               팀 이름 입력
             </label>
             <input
-              defaultValue="세얼간이"
+              placeholder="Team"
               className="w-full h-[40px] border border-[#C9DEFA] bg-white px-[11px] text-[14px] text-black outline-none focus:border-[#4A8DFF]"
             />
           </div>
@@ -108,18 +108,8 @@ function TeamCreateModal({ onClose, onComplete }) {
               프로젝트 이름 입력
             </label>
             <input
-              defaultValue="그로쓰 03"
+              placeholder="Project"
               className="w-full h-[40px] border border-[#C9DEFA] bg-white px-[11px] text-[14px] text-black outline-none focus:border-[#4A8DFF]"
-            />
-          </div>
-
-          <div className="col-span-2 bg-[#F8FBFF] border border-[#C9DEFA] px-[13px] py-[12px]">
-            <label className="block text-[13px] font-semibold text-black mb-[8px]">
-              프로젝트 기간 설정
-            </label>
-            <input
-              defaultValue="2026/02/16 ~ 2026/02/19"
-              className="w-full h-[36px] bg-white border border-[#C9DEFA] px-[10px] text-[14px] text-black outline-none focus:border-[#4A8DFF]"
             />
           </div>
 
@@ -129,7 +119,7 @@ function TeamCreateModal({ onClose, onComplete }) {
             </label>
             <input
               type="date"
-              defaultValue="2026-02-19"
+              placeholder="2026-02-19"
               className="w-full h-[40px] border border-[#C9DEFA] bg-white px-[11px] text-[14px] text-black outline-none focus:border-[#4A8DFF]"
             />
           </div>
@@ -158,7 +148,7 @@ function TeamCreateModal({ onClose, onComplete }) {
 }
 
 function InviteCodeModal({ onClose, onAccept }) {
-  const [inviteCode, setInviteCode] = useState("LDI983CVD2");
+  const [inviteCode, setInviteCode] = useState("");
 
   return (
     <ModalShell width="w-[440px]" onClose={onClose}>
@@ -178,7 +168,7 @@ function InviteCodeModal({ onClose, onAccept }) {
         <input
           value={inviteCode}
           onChange={(event) => setInviteCode(event.target.value)}
-          placeholder="초대코드를 입력하세요"
+          placeholder="Invite Code"
           className="w-full h-[52px] border border-[#C9DEFA] bg-white px-[14px] text-[16px] tracking-[1px] text-black outline-none focus:border-[#4A8DFF] mb-[26px]"
         />
 
