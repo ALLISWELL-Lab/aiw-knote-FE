@@ -4,9 +4,10 @@ import Breadcrumb from "../components/Breadcrumb";
 import api from "../api";
 
 const DEFAULT_MEMBER = {
+  id: 1,
   name: "정서윤",
-  role: "백엔드",
-  tags: ["백엔드", "JAVA"],
+  role: "",
+  tags: [],
 };
 
 const DEFAULT_NOTIFICATION = {
@@ -97,11 +98,9 @@ function ResultModal({ message, onClose }) {
         <div className="h-[46px] border-b border-[#C9DEFA] bg-[#4A8DFF] flex items-center justify-center text-[15px] font-semibold text-white">
           알림
         </div>
-
-        <div className="px-[24px] py-[30px] text-[14px] text-black text-center leading-[22px]">
+        <div className="px-[24px] py-[30px] text-[14px] text-black text-center leading-[22px] whitespace-pre-wrap">
           {message}
         </div>
-
         <div className="h-[54px] flex items-center justify-end px-[18px]">
           <button
             type="button"
@@ -117,73 +116,68 @@ function ResultModal({ message, onClose }) {
 }
 
 function MyPage() {
-  const [member, setMember] = useState(DEFAULT_MEMBER);
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATION);
 
-  const [name, setName] = useState(DEFAULT_MEMBER.name);
-  const [role, setRole] = useState(DEFAULT_MEMBER.role);
-  const [tagInput, setTagInput] = useState(DEFAULT_MEMBER.tags.join(", "));
+  // 백엔드 @NotNull 필드 유지를 위한 기존 회원 정보 원본 저장 상태
+  const [serverRawData, setServerRawData] = useState(null);
+
+  const [userId, setUserId] = useState(1);
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const [tags, setTags] = useState([]);
+  const [singleTagInput, setSingleTagInput] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
 
   const isIndividualAlarmDisabled = !notifications.allAlarm;
 
+  // 마운트 시 데이터 조회 및 백엔드 DTO 필드 변환 처리
   useEffect(() => {
     const fetchMyPageData = async () => {
       try {
         setIsLoading(true);
-
-        const [memberResponse, notificationResponse] = await Promise.all([
-          api.get("/member/me"),
-          api.get("/mypage/notifications/settings"),
-        ]);
-
+        const memberResponse = await api.get("/members/me");
         const memberData = memberResponse.data || {};
-        const notificationData = notificationResponse.data || {};
 
-        const nextMember = {
-          name: memberData.name || DEFAULT_MEMBER.name,
-          role: memberData.role || DEFAULT_MEMBER.role,
-          tags:
-            memberData.tags ||
-            memberData.interestTags ||
-            DEFAULT_MEMBER.tags,
-        };
+        // 원본 데이터를 보관하여 필수 데이터 규격 유지
+        setServerRawData(memberData);
 
-        const nextNotification = {
-          allAlarm:
-            notificationData.allAlarm ??
-            notificationData.allNotification ??
-            DEFAULT_NOTIFICATION.allAlarm,
-          meetingAlarm:
-            notificationData.meetingAlarm ??
-            DEFAULT_NOTIFICATION.meetingAlarm,
-          todoAlarm:
-            notificationData.todoAlarm ??
-            notificationData.deadlineAlarm ??
-            DEFAULT_NOTIFICATION.todoAlarm,
-          meetingAlarmTime:
-            notificationData.meetingAlarmTime ||
-            DEFAULT_NOTIFICATION.meetingAlarmTime,
-          todoAlarmTime:
-            notificationData.todoAlarmTime ||
-            notificationData.deadlineAlarmTime ||
-            DEFAULT_NOTIFICATION.todoAlarmTime,
-          customMinute:
-            notificationData.customMinute ??
-            DEFAULT_NOTIFICATION.customMinute,
-        };
+        setUserId(memberData.id || 1);
+        setName(memberData.name || "정서윤");
+        setRole(memberData.role || "");
+        
+        // interestedField 문자열을 쉼표 기준으로 쪼개어 tags 배열로 변환
+        if (memberData.interestedField) {
+          const parsedTags = memberData.interestedField
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t.length > 0);
+          setTags(parsedTags);
+        } else {
+          setTags([]);
+        }
 
-        setMember(nextMember);
-        setNotifications(nextNotification);
-
-        setName(nextMember.name);
-        setRole(nextMember.role);
-        setTagInput(nextMember.tags.join(", "));
+        try {
+          const notificationResponse = await api.get("/mypage/notifications/settings");
+          if (notificationResponse.data) {
+            const notificationData = notificationResponse.data;
+            setNotifications({
+              allAlarm: notificationData.allAlarm ?? notificationData.allNotification ?? DEFAULT_NOTIFICATION.allAlarm,
+              meetingAlarm: notificationData.meetingAlarm ?? DEFAULT_NOTIFICATION.meetingAlarm,
+              todoAlarm: notificationData.todoAlarm ?? notificationData.deadlineAlarm ?? DEFAULT_NOTIFICATION.todoAlarm,
+              meetingAlarmTime: notificationData.meetingAlarmTime || DEFAULT_NOTIFICATION.meetingAlarmTime,
+              todoAlarmTime: notificationData.todoAlarmTime || notificationData.deadlineAlarmTime || DEFAULT_NOTIFICATION.todoAlarmTime,
+              customMinute: notificationData.customMinute ?? DEFAULT_NOTIFICATION.customMinute,
+            });
+          }
+        } catch (notifErr) {
+          console.log("알림 설정 로드 스킵");
+        }
       } catch (error) {
-        console.error("마이페이지 정보 조회 실패:", error);
-        // 백엔드 연결 전에도 화면 확인 가능하도록 기본값 유지
+        console.error("마이페이지 데이터 조회 실패:", error);
+        setRole("");
+        setTags([]);
       } finally {
         setIsLoading(false);
       }
@@ -192,42 +186,57 @@ function MyPage() {
     fetchMyPageData();
   }, []);
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const cleanTag = singleTagInput.trim().replace("#", "");
+      if (cleanTag === "") return;
+      if (tags.includes(cleanTag)) {
+        setSingleTagInput("");
+        return;
+      }
+      setTags([...tags, cleanTag]);
+      setSingleTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  // 백엔드 MemberDTO 필드 규격에 맞춰 매핑 후 수정 요청 전송
   const handleMemberSave = async () => {
-    const tags = tagInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
+    if (!name.trim()) {
+      setResultMessage("이름을 입력해 주세요.");
+      return;
+    }
+
+    // tags 배열을 다시 쉼표 구분 문자열로 채워 백엔드 필드 명세 충족
+    const interestedFieldString = tags.join(", ");
 
     const payload = {
-      name,
-      role,
-      tags,
-      interestTags: tags,
-      notificationInfo: notifications,
+      id: userId,
+      provider: serverRawData?.provider || "google",
+      email: serverRawData?.email || "user@example.com",
+      name: name.trim(),
+      interestedField: interestedFieldString,
+      activated: serverRawData?.activated ?? true,
+      role: role.trim()
     };
 
     try {
-      await api.post("/member/me", payload);
-
-      setMember({
-        name,
-        role,
-        tags,
-      });
-
-      setResultMessage("회원 정보가 저장되었습니다.");
+      await api.post(`/members/me?memberId=${userId}`, payload);
+      setResultMessage("회원 프로필 정보가 성공적으로 변경되었습니다.");
     } catch (error) {
       console.error("회원 정보 수정 실패:", error);
-      setResultMessage("회원 정보 저장에 실패했습니다.");
+      setResultMessage("회원 프로필 정보 변경에 실패했습니다. 다시 시도해 주세요.");
     }
   };
 
   const handleNotificationSave = async () => {
     const payload = {
       allAlarm: notifications.allAlarm,
-      meetingAlarm: notifications.allAlarm
-        ? notifications.meetingAlarm
-        : false,
+      meetingAlarm: notifications.allAlarm ? notifications.meetingAlarm : false,
       todoAlarm: notifications.allAlarm ? notifications.todoAlarm : false,
       meetingAlarmTime: notifications.meetingAlarmTime,
       todoAlarmTime: notifications.todoAlarmTime,
@@ -236,19 +245,19 @@ function MyPage() {
 
     try {
       await api.post("/mypage/notifications/settings", payload);
-      setResultMessage("알림 설정이 저장되었습니다.");
+      setResultMessage("알림 설정이 성공적으로 저장되었습니다.");
     } catch (error) {
       console.error("알림 설정 수정 실패:", error);
-      setResultMessage("알림 설정 저장에 실패했습니다.");
+      setResultMessage("알림 설정에 실패했습니다. 다시 시도해 주세요.");
     }
   };
 
   return (
-    <Layout>
+    <Layout customUser={{ name, tags: tags }}>
       <Breadcrumb items={["home", "myPage"]} />
 
       <div className="w-[980px] mx-auto text-black">
-        <section className="w-[620px] min-h-[250px] border border-[#C9DEFA] bg-white px-[34px] py-[28px] mb-[42px] shadow-sm">
+        <section className="w-[620px] min-h-[250px] border border-[#C9DEFA] bg-white px-[34px] py-[28px] mb-[42px] shadow-sm relative">
           <div className="inline-flex h-[28px] px-[14px] border border-[#4A8DFF] text-[#4A8DFF] text-[13px] font-semibold items-center justify-center mb-[26px]">
             프로필 관리
           </div>
@@ -262,30 +271,32 @@ function MyPage() {
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="w-[160px] h-[32px] border-b border-black bg-transparent text-[15px] font-semibold text-black outline-none"
+                  placeholder="이름을 입력하세요"
                 />
-
-                <button
-                  type="button"
-                  onClick={handleMemberSave}
-                  className="h-[28px] px-[10px] bg-[#4A8DFF] text-white text-[12px] font-semibold hover:opacity-90"
-                >
-                  저장
-                </button>
               </div>
 
-              <div className="flex items-center gap-[8px] mb-[18px]">
-                {tagInput
-                  .split(",")
-                  .map((tag) => tag.trim())
-                  .filter(Boolean)
-                  .map((tag) => (
+              <div className="flex flex-wrap items-center gap-[8px] mb-[18px] min-h-[24px]">
+                {tags.length > 0 ? (
+                  tags.map((tag, idx) => (
                     <span
-                      key={tag}
-                      className="h-[22px] px-[7px] bg-white border border-[#4A8DFF]/40 rounded-[3px] text-[12px] text-black flex items-center"
+                      key={idx}
+                      className="h-[22px] pl-[7px] pr-[4px] bg-white border border-[#4A8DFF]/40 rounded-[3px] text-[12px] text-black flex items-center gap-[5px] shadow-sm select-none"
                     >
-                      #{tag.replace("#", "")}
+                      <span>#{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="w-[14px] h-[14px] bg-gray-100 hover:bg-red-100 rounded-full flex items-center justify-center text-[10px] text-gray-500 hover:text-red-500 font-bold transition-colors"
+                      >
+                        ✕
+                      </button>
                     </span>
-                  ))}
+                  ))
+                ) : (
+                  <span className="text-[12px] text-gray-400 italic select-none">
+                    아래 관심 태그 창에 키워드를 추가해보세요.
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-[90px_1fr] gap-y-[14px] text-[13px] text-black">
@@ -294,18 +305,29 @@ function MyPage() {
                   value={role}
                   onChange={(event) => setRole(event.target.value)}
                   className="h-[30px] border-b border-[#C9DEFA] bg-transparent px-[4px] outline-none"
-                  placeholder="예: 백엔드"
+                  placeholder="예: 백엔드 개발자"
                 />
 
                 <span className="font-semibold">관심 태그</span>
                 <input
-                  value={tagInput}
-                  onChange={(event) => setTagInput(event.target.value)}
+                  value={singleTagInput}
+                  onChange={(event) => setSingleTagInput(event.target.value)}
+                  onKeyDown={handleKeyDown}
                   className="h-[30px] border-b border-[#C9DEFA] bg-transparent px-[4px] outline-none"
-                  placeholder="예: 백엔드, JAVA"
+                  placeholder="태그를 입력하고 Enter를 누르세요"
                 />
               </div>
             </div>
+          </div>
+
+          <div className="flex justify-end mt-[28px]">
+            <button
+              type="button"
+              onClick={handleMemberSave}
+              className="w-[82px] h-[32px] bg-[#4A8DFF] text-white text-[13px] font-semibold shadow-sm hover:opacity-90 transition"
+            >
+              저장
+            </button>
           </div>
         </section>
 
@@ -356,9 +378,7 @@ function MyPage() {
               <span className="font-semibold">회의 알림 시간 설정</span>
               <AlarmTimeSelect
                 value={notifications.meetingAlarmTime}
-                disabled={
-                  isIndividualAlarmDisabled || !notifications.meetingAlarm
-                }
+                disabled={isIndividualAlarmDisabled || !notifications.meetingAlarm}
                 onChange={(value) =>
                   setNotifications((prev) => ({
                     ...prev,
@@ -423,9 +443,7 @@ function MyPage() {
                     }
                     className="w-full h-[32px] border border-[#C9DEFA] px-[8px] text-[13px] text-black outline-none"
                   />
-                  <span className="text-[12px] text-black whitespace-nowrap">
-                    분 전
-                  </span>
+                  <span className="text-[12px] text-black whitespace-nowrap">분 전</span>
                 </div>
               </div>
             </div>
@@ -441,12 +459,6 @@ function MyPage() {
             </button>
           </div>
         </section>
-
-        {isLoading && (
-          <p className="mt-[18px] text-[13px] text-gray-500">
-            마이페이지 정보를 불러오는 중입니다.
-          </p>
-        )}
       </div>
 
       {resultMessage && (
