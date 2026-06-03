@@ -161,7 +161,7 @@ function formatHeaderTime(date) {
 function NoticeAlertModal({ notices, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
-      <div className="w-[430px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]">
+      <div className="w-[430px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
         <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
           공지 알림
         </div>
@@ -332,7 +332,7 @@ function Layout({ children }) {
       <RobotBriefing currentDate={currentTime} isVisible={isSidebarOpen} />
 
       <main
-        className={`min-w-[1500px] min-h-screen bg-[#EAF1FC] transition-all duration-300 ${
+        className={`min-h-screen bg-[#EAF1FC] transition-all duration-300 ${
           isSidebarOpen ? "ml-[290px]" : "ml-0"
         }`}
       >

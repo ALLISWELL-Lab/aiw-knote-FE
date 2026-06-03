@@ -114,7 +114,7 @@ function WeeklyFeedback() {
 
       <div className="w-[900px] mx-auto">
         {/* Toggle buttons */}
-        <div className="flex gap-[14px] mb-[82px]">
+        <div className="flex gap-[14px] mb-[34px]">
           <Link
             to="/feedback"
             className="h-[32px] px-[14px] border border-[#C9DEFA] bg-white text-[14px] text-black flex items-center justify-center rounded-[3px] hover:bg-[#ADDCFF]/40"
@@ -173,8 +173,8 @@ function WeeklyFeedback() {
             </div>
 
             <div className="px-[22px] py-[26px] text-[14px] leading-[26px] text-black">
-              <p className="font-semibold text-[18px] mb-[18px]">
-                &lt;위클리 업무 피드백&gt;
+              <p className="font-semibold text-[16px] text-[#4A8DFF] border-b border-[#C9DEFA] pb-[8px] mb-[18px]">
+                위클리 업무 피드백
               </p>
 
               <div className="mb-[36px]">
@@ -190,8 +190,8 @@ function WeeklyFeedback() {
                 </p>
               </div>
 
-              <p className="font-semibold text-[18px] mb-[18px]">
-                &lt;업무 수행에 관한 AI 조언&gt;
+              <p className="font-semibold text-[16px] text-[#4A8DFF] border-b border-[#C9DEFA] pb-[8px] mb-[18px]">
+                업무 수행에 관한 AI 조언
               </p>
 
               <div className="mb-[36px]">
@@ -216,8 +216,8 @@ function WeeklyFeedback() {
                 </p>
               </div>
 
-              <p className="font-semibold text-[18px] mb-[18px]">
-                &lt;이번 주의 명언&gt;
+              <p className="font-semibold text-[16px] text-[#4A8DFF] border-b border-[#C9DEFA] pb-[8px] mb-[18px]">
+                이번 주의 명언
               </p>
 
               <p>ㆍNO PAIN, NO GAIN</p>

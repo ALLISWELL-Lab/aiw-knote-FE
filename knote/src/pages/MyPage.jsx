@@ -93,7 +93,7 @@ function AlarmTimeSelect({ value, disabled, onChange }) {
 function ResultModal({ message, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
-      <div className="w-[360px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]">
+      <div className="w-[360px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
         <div className="h-[46px] border-b border-[#C9DEFA] bg-[#4A8DFF] flex items-center justify-center text-[15px] font-semibold text-white">
           알림
         </div>
@@ -257,7 +257,7 @@ function MyPage() {
             <UserIconLarge />
 
             <div className="flex-1">
-              <div className="flex items-center gap-[18px] mb-[14px]">
+              <div className="flex items-center gap-[12px] mb-[14px]">
                 <input
                   value={name}
                   onChange={(event) => setName(event.target.value)}
@@ -267,22 +267,9 @@ function MyPage() {
                 <button
                   type="button"
                   onClick={handleMemberSave}
-                  className="w-[30px] h-[30px] flex items-center justify-center hover:bg-[#EAF1FC]"
-                  aria-label="회원 정보 저장"
+                  className="h-[28px] px-[10px] bg-[#4A8DFF] text-white text-[12px] font-semibold hover:opacity-90"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M4 20H8L19 9L15 5L4 16V20Z"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14 6L18 10"
-                      stroke="black"
-                      strokeWidth="2"
-                    />
-                  </svg>
+                  저장
                 </button>
               </div>
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import Breadcrumb from "../components/Breadcrumb";
@@ -19,6 +19,18 @@ function Recording() {
   const [showSaved, setShowSaved] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (isRecording) {
+      setElapsedSeconds(0);
+      timerRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isRecording]);
 
   const stopMicrophoneStream = () => {
     if (streamRef.current) {
@@ -257,22 +269,41 @@ function Recording() {
               </>
             ) : (
               <>
+                <style>{`
+                  @keyframes wave {
+                    0%, 100% { transform: scaleY(0.4); }
+                    50% { transform: scaleY(1); }
+                  }
+                `}</style>
+
                 <button
                   type="button"
                   onClick={handleStopRecording}
                   disabled={isUploading}
-                  className="w-[48px] h-[48px] rounded-[4px] bg-[#4A8DFF] mb-[58px] shadow-sm disabled:opacity-50"
+                  className="w-[48px] h-[48px] rounded-[4px] bg-[#4A8DFF] mb-[32px] shadow-sm disabled:opacity-50"
                 />
 
-                <div className="flex gap-[5px] mb-[18px]">
-                  <div className="w-[4px] h-[18px] rounded-full bg-[#ADDCFF]" />
-                  <div className="w-[4px] h-[18px] rounded-full bg-[#ADDCFF]" />
+                <div className="flex gap-[4px] items-center mb-[14px]">
+                  {[0, 0.1, 0.2, 0.1, 0].map((delay, i) => (
+                    <div
+                      key={i}
+                      className="w-[4px] rounded-full bg-[#4A8DFF]"
+                      style={{
+                        height: 22,
+                        animation: "wave 0.8s ease-in-out infinite",
+                        animationDelay: `${delay}s`,
+                      }}
+                    />
+                  ))}
                 </div>
 
-                <p className="text-[14px] text-black">
-                  {isUploading
-                    ? "녹음 파일 업로드 중입니다."
-                    : "녹음 중입니다."}
+                <p className="text-[20px] font-semibold text-[#4A8DFF] mb-[6px] tabular-nums">
+                  {String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}
+                  :{String(elapsedSeconds % 60).padStart(2, "0")}
+                </p>
+
+                <p className="text-[13px] text-gray-500">
+                  {isUploading ? "업로드 중..." : "녹음 중"}
                 </p>
               </>
             )}
@@ -319,7 +350,7 @@ function Recording() {
 
       {showConfirm && (
         <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
-          <div className="w-[420px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]">
+          <div className="w-[420px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
             <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
               녹음 저장
             </div>
@@ -355,7 +386,7 @@ function Recording() {
 
       {showSaved && (
         <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
-          <div className="w-[380px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)] translate-x-[145px]">
+          <div className="w-[380px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
             <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
               저장 완료
             </div>

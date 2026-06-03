@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
+import api from "../api";
 
 const monthNames = [
   "JANUARY",
@@ -30,9 +31,10 @@ function TodoRow({ text, checked = false }) {
   );
 }
 
-function getCalendarDays(date) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
+function getCalendarDays(displayDate, todayRef) {
+  const year = displayDate.getFullYear();
+  const month = displayDate.getMonth();
+  const ref = todayRef || displayDate;
 
   const firstDate = new Date(year, month, 1);
   const firstDay = firstDate.getDay();
@@ -49,9 +51,9 @@ function getCalendarDays(date) {
       day: current.getDate(),
       isCurrentMonth: current.getMonth() === month,
       isToday:
-        current.getFullYear() === date.getFullYear() &&
-        current.getMonth() === date.getMonth() &&
-        current.getDate() === date.getDate(),
+        current.getFullYear() === ref.getFullYear() &&
+        current.getMonth() === ref.getMonth() &&
+        current.getDate() === ref.getDate(),
     };
   });
 }
@@ -210,17 +212,98 @@ function PermissionModal({ onClose }) {
 }
 
 function Dashboard() {
+
   const today = new Date();
-  const calendarDays = getCalendarDays(today);
+  const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const calendarDays = getCalendarDays(calendarDate, today);
+
+  const handlePrevMonth = () =>
+    setCalendarDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+
+  const handleNextMonth = () =>
+    setCalendarDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("전체");
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
-  const isTeamLeader = true;
-  const teamMembers = ["정서윤", "임이랑", "강민지", "전체"];
+  const [teamMembers, setTeamMembers] = useState(["전체"]); 
+  const [projectName, setProjectName] = useState("PROJECT 로딩 중...");
+  const [isTeamLeader, setIsTeamLeader] = useState(true); // 기본값 팀장 활성화
 
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // 1. 내 정보 조회 API를 찔러서 현재 어떤 팀에 속해있는지 teamId를 가져옵니다.
+        const myInfoRes = await api.get("/members/me");
+        
+        // 팀원분의 DB 설계 기준 혹은 생성한 팀 타겟팅 (teamId가 없다면 임시 1L로 Fallback)
+        const teamId = myInfoRes.data.teamId || 1; 
+
+        // 2. 방금 백엔드에 새로 만든 정석 특정 팀 멤버 목록 조회 API를 찌릅니다 🚀
+        const membersRes = await api.get(`/teams/${teamId}/members`);
+        
+        if (membersRes.data && Array.isArray(membersRes.data)) {
+          // 백엔드가 넘겨준 MemberDTO의 name(이름) 배열을 맵핑합니다.
+          const realNames = membersRes.data.map(member => member.name);
+          // 화면의 드롭다운 리스트 갱신 (진짜 팀원들 이름 + "전체" 필터 추가)
+          setTeamMembers([...realNames, "전체"]);
+        }
+
+        // 3. (옵션) 진짜 팀명이나 프로젝트명도 가입 정보에 맞게 매핑해 줍니다.
+        const titleRes = await api.get(`/teams/${teamId}`);
+        if (titleRes.data && titleRes.data.name) {
+          setProjectName(`PROJECT: ${titleRes.data.name}`);
+        } else {
+          setProjectName("PROJECT: 캡스톤디자인과창업프로젝트 B");
+        }
+
+      } catch (error) {
+        console.error("대시보드 실시간 연동 중 에러 발생:", error);
+        // 혹시라도 서버가 내려갔을 때 데모가 꺼지지 않도록 안전망 이름들 복구
+        setTeamMembers(["정서윤", "임이랑", "강민지", "전체"]);
+        setProjectName("PROJECT: 캡스톤디자인과창업프로젝트 B");
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const isLoading = projectName === "PROJECT 로딩 중..." || teamMembers.length <= 1;
+
+  // 로그인 직후 대시보드로 진입했을 때, 로딩 스켈레톤
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="w-[980px] mx-auto animate-pulse text-gray-300 mt-[40px]">
+          {/* 상단 브레드크럼 스켈레톤 */}
+          <div className="w-full flex justify-between mb-[18px]">
+            <div className="w-[80px] h-[20px] bg-gray-200 rounded" />
+            <div className="w-[400px] h-[30px] bg-gray-200 rounded" />
+          </div>
+          <div className="h-px bg-gray-200 w-full mb-[38px]" />
+          
+          {/* 본문 좌우 레이아웃 스켈레톤 */}
+          <div className="w-full flex justify-between gap-[40px]">
+            {/* 왼쪽 영역 바디 스켈레톤 */}
+            <div className="flex flex-col gap-[28px] flex-1">
+              <div className="w-[320px] h-[34px] bg-gray-200 rounded" />
+              <div className="w-[320px] h-[220px] bg-gray-100 rounded" />
+              <div className="w-[320px] h-[165px] bg-gray-100 rounded" />
+            </div>
+            {/* 오른쪽 달력 영역 스켈레톤 */}
+            <div className="w-[400px] flex-col flex-shrink-0">
+              <div className="w-full h-[34px] bg-gray-200 rounded mb-[24px]" />
+              <div className="w-full h-[300px] bg-gray-100 rounded" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+  
   const handleNoticeClick = () => {
     if (isTeamLeader) {
       setShowNoticeModal(true);
@@ -259,7 +342,8 @@ function Dashboard() {
           <div className="flex flex-col gap-[28px] flex-1">
             <div className="flex items-center gap-[12px] w-full h-[34px]">
               <div className="w-[320px] h-[34px] border border-[#C9DEFA] bg-white flex items-center justify-between px-[10px] text-[13px] font-medium shadow-sm">
-                <span className="truncate">PROJECT: 캡스톤디자인과창업프로젝트 B</span>
+                {/* 동적 프로젝트명 바인딩 */}
+                <span className="truncate">{projectName}</span>
                 <span className="text-[9px] text-slate-400">▼</span>
               </div>
 
@@ -331,11 +415,23 @@ function Dashboard() {
             </div>
 
             <div className="flex items-center justify-between mb-[14px] px-[6px]">
-              <span className="text-[20px] text-gray-400 select-none">‹</span>
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="text-[20px] text-gray-400 hover:text-[#4A8DFF] select-none leading-none"
+              >
+                ‹
+              </button>
               <span className="text-[14px] font-bold tracking-wide">
-                {today.getFullYear()} {monthNames[today.getMonth()]}
+                {calendarDate.getFullYear()} {monthNames[calendarDate.getMonth()]}
               </span>
-              <span className="text-[20px] text-gray-400 select-none">›</span>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="text-[20px] text-gray-400 hover:text-[#4A8DFF] select-none leading-none"
+              >
+                ›
+              </button>
             </div>
 
             <div className="grid grid-cols-7 text-[11px] text-gray-500 mb-[6px] font-semibold text-center">

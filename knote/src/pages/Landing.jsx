@@ -39,7 +39,7 @@ function GoogleIcon() {
           <img
             src="/images/knote-logo.png"
             alt="KNOTE"
-            className="w-[760px] h-auto object-contain mb-[96px] select-none translate-x-[88px]"
+            className="w-[760px] h-auto object-contain mb-[96px] select-none"
             draggable="false"
           />
   

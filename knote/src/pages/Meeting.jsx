@@ -2,6 +2,11 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Breadcrumb from "../components/Breadcrumb";
 
+function formatMeetingDate(raw) {
+  if (!raw || raw.length !== 8) return raw;
+  return `${raw.slice(0, 4)}. ${raw.slice(4, 6)}. ${raw.slice(6, 8)}`;
+}
+
 function MeetingFileItem({ color, date, title }) {
   return (
     <div className="flex gap-[10px] mb-[12px]">
@@ -10,7 +15,7 @@ function MeetingFileItem({ color, date, title }) {
         style={{ backgroundColor: color }}
       />
       <div>
-        <p className="font-semibold leading-[15px]">{date}</p>
+        <p className="font-semibold leading-[15px]">{formatMeetingDate(date)}</p>
         <p className="leading-[15px]">{title}</p>
       </div>
     </div>
