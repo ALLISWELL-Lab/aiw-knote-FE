@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import api from "../api";
 
 function UserIcon() {
   return (
@@ -36,14 +37,8 @@ function MenuIcon({ type }) {
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <circle cx="8" cy="8" r="3" {...common} />
         <circle cx="17" cy="9" r="2.5" {...common} />
-        <path
-          d="M3 20C3.8 16.5 5.5 15 8 15C10.5 15 12.2 16.5 13 20"
-          {...common}
-        />
-        <path
-          d="M13.5 19C14.1 16.8 15.3 15.7 17 15.7C18.9 15.7 20.1 16.9 21 19"
-          {...common}
-        />
+        <path d="M3 20C3.8 16.5 5.5 15 8 15C10.5 15 12.2 16.5 13 20" {...common} />
+        <path d="M13.5 19C14.1 16.8 15.3 15.7 17 15.7C18.9 15.7 20.1 16.9 21 19" {...common} />
       </svg>
     );
   }
@@ -70,10 +65,7 @@ function MenuIcon({ type }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path d="M7 11V20" {...common} />
-      <path
-        d="M7 11L10 4C10.5 3 12 3.3 12 4.5V9H18C19.2 9 20.1 10.1 19.8 11.3L18.4 18C18.2 19.2 17.2 20 16 20H7"
-        {...common}
-      />
+      <path d="M7 11L10 4C10.5 3 12 3.3 12 4.5V9H18C19.2 9 20.1 10.1 19.8 11.3L18.4 18C18.2 19.2 17.2 20 16 20H7" {...common} />
     </svg>
   );
 }
@@ -95,49 +87,21 @@ function RobotBriefing({ currentDate, isVisible }) {
     >
       <div className="mb-[6px]">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <rect
-            x="11"
-            y="13"
-            width="26"
-            height="25"
-            rx="4"
-            stroke="#4A8DFF"
-            strokeWidth="4"
-          />
+          <rect x="11" y="13" width="26" height="25" rx="4" stroke="#4A8DFF" strokeWidth="4" />
           <circle cx="19" cy="25" r="2.5" fill="#4A8DFF" />
           <circle cx="29" cy="25" r="2.5" fill="#4A8DFF" />
-          <path
-            d="M19 32H29"
-            stroke="#4A8DFF"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <path
-            d="M24 13V6"
-            stroke="#4A8DFF"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
+          <path d="M19 32H29" stroke="#4A8DFF" strokeWidth="3" strokeLinecap="round" />
+          <path d="M24 13V6" stroke="#4A8DFF" strokeWidth="4" strokeLinecap="round" />
           <circle cx="24" cy="5" r="3" fill="#4A8DFF" />
-          <path
-            d="M6 24V31"
-            stroke="#4A8DFF"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <path
-            d="M42 24V31"
-            stroke="#4A8DFF"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
+          <path d="M6 24V31" stroke="#4A8DFF" strokeWidth="4" strokeLinecap="round" />
+          <path d="M42 24V31" stroke="#4A8DFF" strokeWidth="4" strokeLinecap="round" />
         </svg>
       </div>
 
       <div className="relative bg-[#F8FBFF] border border-[#C9DEFA] rounded-[3px] shadow-sm text-[14px] text-black">
         <div className="absolute left-[-11px] top-[55px] w-0 h-0 border-y-[10px] border-y-transparent border-r-[11px] border-r-[#F8FBFF]" />
 
-        <div className="h-[39px] border-b border-[#C9DEFA] flex items-center px-[10px] text-black font-semibold text-[12px] whitespace-nowrap">
+        <div className="h-[39px] border-b border-[#C9DEFA] bg-white flex items-center px-[10px] text-black font-semibold text-[12px] whitespace-nowrap">
           {formatBriefingDate(currentDate)} 데일리 브리핑
         </div>
 
@@ -158,6 +122,7 @@ function formatHeaderTime(date) {
   });
 }
 
+// 공지 알림 모달
 function NoticeAlertModal({ notices, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
@@ -170,27 +135,13 @@ function NoticeAlertModal({ notices, onClose }) {
           {notices.length > 0 ? (
             <div className="space-y-[14px]">
               {notices.map((notice) => (
-                <div
-                  key={notice.id}
-                  className="border border-[#C9DEFA] bg-[#F8FBFF] px-[14px] py-[12px]"
-                >
+                <div key={notice.id} className="border border-[#C9DEFA] bg-[#F8FBFF] px-[14px] py-[12px]">
                   <div className="flex items-center justify-between mb-[8px]">
-                    <p className="text-[14px] font-semibold text-black">
-                      {notice.title}
-                    </p>
-
-                    {!notice.read && (
-                      <span className="w-[7px] h-[7px] bg-red-500 rounded-full" />
-                    )}
+                    <p className="text-[14px] font-semibold text-black">{notice.title}</p>
+                    {!notice.read && <span className="w-[7px] h-[7px] bg-red-500 rounded-full" />}
                   </div>
-
-                  <p className="text-[13px] leading-[21px] text-black mb-[8px]">
-                    {notice.content}
-                  </p>
-
-                  <p className="text-[11px] text-gray-500">
-                    {notice.createdAt}
-                  </p>
+                  <p className="text-[13px] leading-[21px] text-black mb-[8px]">{notice.content}</p>
+                  <p className="text-[11px] text-gray-500">{notice.createdAt}</p>
                 </div>
               ))}
             </div>
@@ -202,11 +153,7 @@ function NoticeAlertModal({ notices, onClose }) {
         </div>
 
         <div className="h-[56px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-end px-[18px]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-[56px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
-          >
+          <button type="button" onClick={onClose} className="w-[56px] h-[28px] bg-[#4A8DFF] text-white text-[13px]">
             OK
           </button>
         </div>
@@ -215,13 +162,18 @@ function NoticeAlertModal({ notices, onClose }) {
   );
 }
 
-function Layout({ children }) {
+function Layout({ children, customUser }) { // 🎯 1. 마이페이지 폼 상태(customUser)를 마운트 매개변수로 주입받습니다.
   const navigate = useNavigate();
-
+  
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [notices, setNotices] = useState([]);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
+
+  const [userData, setUserData] = useState({
+    name: "로딩 중...",
+    tags: []
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -231,20 +183,50 @@ function Layout({ children }) {
     return () => clearInterval(timer);
   }, []);
 
+  // 📡 [백엔드 /api/v1/members/me 연동 가동]
+  useEffect(() => {
+    const fetchSidebarProfile = async () => {
+      try {
+        const response = await api.get("/members/me"); 
+        const data = response.data || {};
+        
+        const userTags = Array.isArray(data.tags) 
+          ? data.tags 
+          : Array.isArray(data.interestTags) 
+          ? data.interestTags 
+          : []; 
+
+        setUserData({
+          name: data.name || "정서윤",
+          tags: userTags
+        });
+      } catch (error) {
+        console.error("사이드바 헤더 유저 정보 조회 실패 (안전 더미 데이터 적용):", error);
+        setUserData({
+          name: "정서윤",
+          tags: []
+        });
+      }
+    };
+
+    fetchSidebarProfile();
+  }, []);
+
+  // 🎯 2. [리얼타임 동기화 핵심 라인] 
+  // 마이페이지 창에서 사용자가 실시간 타이핑 입력 중인 임시 스택 정보가 넘어온다면, 
+  // 백엔드 고정 데이터(userData)보다 최우선시하여 사이드바 화면에 즉시 맵핑 스위칭시킵니다!
+  const currentName = customUser ? customUser.name : userData.name;
+  const currentTags = customUser ? customUser.tags : userData.tags;
+
   const loadNotices = () => {
-    const savedNotices = JSON.parse(
-      localStorage.getItem("knoteNotices") || "[]"
-    );
+    const savedNotices = JSON.parse(localStorage.getItem("knoteNotices") || "[]");
     setNotices(savedNotices);
   };
 
   useEffect(() => {
     loadNotices();
 
-    const handleNoticeUpdate = () => {
-      loadNotices();
-    };
-
+    const handleNoticeUpdate = () => { loadNotices(); };
     window.addEventListener("knote-notice-updated", handleNoticeUpdate);
     window.addEventListener("storage", handleNoticeUpdate);
 
@@ -255,17 +237,10 @@ function Layout({ children }) {
   }, []);
 
   const hasUnreadNotice = notices.some((notice) => !notice.read);
-
-  const handleNoticeBellClick = () => {
-    setShowNoticeModal(true);
-  };
+  const handleNoticeBellClick = () => { setShowNoticeModal(true); };
 
   const handleCloseNoticeModal = () => {
-    const readNotices = notices.map((notice) => ({
-      ...notice,
-      read: true,
-    }));
-
+    const readNotices = notices.map((notice) => ({ ...notice, read: true }));
     localStorage.setItem("knoteNotices", JSON.stringify(readNotices));
     setNotices(readNotices);
     setShowNoticeModal(false);
@@ -283,7 +258,6 @@ function Layout({ children }) {
       <div className="w-[28px] flex justify-center">
         <MenuIcon type={iconType} />
       </div>
-
       <NavLink to={to} end={end} className={menuClass}>
         {label}
       </NavLink>
@@ -301,19 +275,29 @@ function Layout({ children }) {
           <UserIcon />
 
           <div className="flex-1 pt-[10px] min-w-0">
-            <div className="text-[15px] text-black font-semibold mb-[14px]">
-              정서윤
+            {/* 🎯 실시간 연동 변수(currentName) 적용 완료 */}
+            <div className="text-[15px] text-black font-bold mb-[14px] truncate">
+              {currentName || "이름을 입력하세요"}
             </div>
 
             <div className="h-[2px] bg-black w-full mb-[14px]" />
 
-            <div className="flex flex-nowrap gap-[4px] items-center overflow-visible">
-              <span className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-none text-[12px]">
-                #백엔드
-              </span>
-              <span className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[4px] h-[22px] leading-none text-[12px]">
-                #JAVA
-              </span>
+            {/* 🎯 실시간 연동 기술스택 배열(currentTags) 적용 및 공백 Placeholder 가이드 문구 완벽 조립 완료 */}
+            <div className="flex flex-wrap gap-[6px] items-center overflow-visible">
+              {currentTags && currentTags.length > 0 ? (
+                currentTags.map((tag, idx) => (
+                  <span 
+                    key={idx} 
+                    className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black border border-[#4A8DFF]/30 rounded-[3px] px-[6px] h-[22px] leading-none text-[11px] font-medium shadow-sm"
+                  >
+                    #{tag.replace("#", "")}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[11px] text-gray-500 font-medium italic select-none">
+                  태그를 추가해보세요
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -368,21 +352,10 @@ function Layout({ children }) {
               aria-label="공지 알림 확인"
             >
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M6 17H18L16.5 15.5V11C16.5 8 14.7 6 12 6C9.3 6 7.5 8 7.5 11V15.5L6 17Z"
-                  stroke="black"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M10 19C10.4 20.2 11 21 12 21C13 21 13.6 20.2 14 19"
-                  stroke="black"
-                  strokeWidth="2"
-                />
+                <path d="M6 17H18L16.5 15.5V11C16.5 8 14.7 6 12 6C9.3 6 7.5 8 7.5 11V15.5L6 17Z" stroke="black" strokeWidth="2" />
+                <path d="M10 19C10.4 20.2 11 21 12 21C13 21 13.6 20.2 14 19" stroke="black" strokeWidth="2" />
               </svg>
-
-              {hasUnreadNotice && (
-                <span className="absolute right-[2px] top-[2px] w-[8px] h-[8px] bg-red-500 rounded-full border border-white" />
-              )}
+              {hasUnreadNotice && <span className="absolute right-[2px] top-[2px] w-[8px] h-[8px] bg-red-500 rounded-full border border-white" />}
             </button>
 
             <button
@@ -392,18 +365,8 @@ function Layout({ children }) {
               aria-label="마이페이지로 이동"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle
-                  cx="12"
-                  cy="8"
-                  r="3.5"
-                  stroke="black"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M5 20C5.8 16.5 8.3 14.5 12 14.5C15.7 14.5 18.2 16.5 19 20"
-                  stroke="black"
-                  strokeWidth="2"
-                />
+                <circle cx="12" cy="8" r="3.5" stroke="black" strokeWidth="2" />
+                <path d="M5 20C5.8 16.5 8.3 14.5 12 14.5C15.7 14.5 18.2 16.5 19 20" stroke="black" strokeWidth="2" />
               </svg>
             </button>
           </div>
@@ -413,10 +376,7 @@ function Layout({ children }) {
       </main>
 
       {showNoticeModal && (
-        <NoticeAlertModal
-          notices={notices}
-          onClose={handleCloseNoticeModal}
-        />
+        <NoticeAlertModal notices={notices} onClose={handleCloseNoticeModal} />
       )}
     </div>
   );
