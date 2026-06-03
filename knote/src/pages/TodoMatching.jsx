@@ -234,7 +234,6 @@ function TodoMatching() {
 
   const handleCloseCompleteModal = () => {
     setShowCompleteModal(false);
-    navigate("/todo");
   };
 
   return (
@@ -339,7 +338,7 @@ function TodoMatching() {
         </div>
 
         <div className="mt-[22px] border border-[#C9DEFA] bg-white px-[18px] py-[16px] text-[13px] leading-[22px] text-black shadow-sm">
-        회의 분석 페이지에서 전달된 TODO 데이터를 기반으로 담당자를 매칭합니다.
+          회의 분석 페이지에서 전달된 TODO 데이터를 기반으로 담당자를 매칭합니다.
         </div>
       </div>
 
