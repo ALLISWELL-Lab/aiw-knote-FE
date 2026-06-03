@@ -48,10 +48,19 @@ function normalizeTranscript(transcript) {
     return transcript
       .split("\n")
       .filter((line) => line.trim() !== "")
-      .map((line, index) => ({
-        speaker: `STT SEGMENT ${index + 1}`,
-        text: line,
-      }));
+      .map((line, index) => {
+        if (line.includes(":")) {
+          const [speaker, ...textParts] = line.split(":");
+          return {
+            speaker: speaker.trim(),
+            text: textParts.join(":").trim(),
+          };
+        }
+        return {
+          speaker: `SPEAKER ${index + 1}`,
+          text: line.trim(),
+        };
+      });
   }
 
   return [];
@@ -71,15 +80,10 @@ function normalizeActionItems(actionItems) {
         };
       }
       return {
-        id: item.actionItemId || item.actionItemsId || item.id || index,
-        title: item.title || item.content || item.task || "액션아이템",
-        assignee:
-          item.assigneeName ||
-          item.assignee ||
-          item.memberName ||
-          item.assigneeId ||
-          "미지정",
-        done: item.done || item.completed || false,
+        id: item.actionItemId || item.id || index,
+        title: item.title || item.memo || "액션아이템",
+        assignee: item.assigneeName || item.assignee || "미지정",
+        done: item.completed || item.done || false,
       };
     });
   }
@@ -96,14 +100,12 @@ function MeetingResult() {
   const [actionItems, setActionItems] = useState([]);
   const [isLoading, setIsLoading] = useState(Boolean(meetingId));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isDownloading, setIsDownloading] = useState(false); // 다운로드 진행 상태 관리 추가
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const fetchMeetingResult = async () => {
       if (!meetingId) {
-        setErrorMessage(
-          "meetingId가 없어 회의 분석 결과를 불러올 수 없습니다."
-        );
+        setErrorMessage("회의 식별 번호(meetingId)가 파라미터에 누락되어 결과를 로드할 수 없습니다.");
         setIsLoading(false);
         return;
       }
@@ -120,9 +122,7 @@ function MeetingResult() {
         setActionItems(normalizeActionItems(data.actionItems));
       } catch (error) {
         console.error("회의 분석 결과 조회 실패:", error);
-        setErrorMessage(
-          "회의 분석 결과를 불러오지 못했습니다. 백엔드 서버 실행 여부와 meetingId를 확인해 주세요."
-        );
+        setErrorMessage("AI 텍스트 가공 분석이 진행 중이거나 서버에 데이터가 없습니다. 잠시 후 다시 확인해 주세요.");
       } finally {
         setIsLoading(false);
       }
@@ -131,33 +131,25 @@ function MeetingResult() {
     fetchMeetingResult();
   }, [meetingId]);
 
-  // ------------------------------------
-  // 🌟 [핵심 추가] 백엔드 STT 텍스트 다운로드 API 연동 함수
-  // ------------------------------------
   const handleDownloadTranscript = async () => {
     if (!meetingId) return;
 
     try {
       setIsDownloading(true);
-
-      // 백엔드 downloadMeetingStt API 호출 (바이너리 데이터를 받기 위해 responseType 추가 필수)
-      const response = await api.get(`/meetings/${meetingId}/download`, {
-        responseType: "blob", 
+      const response = await api.get(`/meetings/${meetingId}/stt/download`, {
+        responseType: "blob",
       });
 
-      // 가상 DOM 링크 생성을 통한 다운로드 트리거 실행
       const blob = new Blob([response.data], { type: "text/plain;charset=utf-8" });
       const downloadUrl = window.URL.createObjectURL(blob);
-      
+
       const link = document.createElement("a");
       link.href = downloadUrl;
-      // 다운로드될 텍스트 파일명 세팅 (백엔드 헤더 설정과 동기화)
-      link.setAttribute("download", `meeting_${meetingId}_stt.txt`); 
-      
+      link.setAttribute("download", `meeting_${meetingId}_stt.txt`);
+
       document.body.appendChild(link);
       link.click();
-      
-      // 다운로드 완료 후 가상 메모리 해제 및 가상 DOM 노드 삭제
+
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
 
@@ -169,42 +161,112 @@ function MeetingResult() {
     }
   };
 
-  const meetingTitle =
-    meeting?.agenda ||
-    meeting?.title ||
-    meeting?.meetingTitle ||
-    "회의 분석 결과";
+  const meetingTitle = meeting?.agenda || "회의 분석 결과";
 
-  const summaryText =
-    meeting?.summaryText ||
-    meeting?.summary ||
-    meeting?.summaryContent ||
-    "";
+  // 🎯 우측 요약 전용 실시간 반응형 가드 선언
+  const rawSummary = meeting?.aiSummary || meeting?.summaryText || meeting?.summary || "";
 
-  const decisions =
-    meeting?.decisions ||
-    meeting?.decisionItems ||
-    meeting?.decisionSummary ||
-    [];
+  const renderProfessionalSummary = () => {
+    if (!rawSummary) {
+      return <p className="text-gray-400">회의 분석 텍스트 요약본 수집 진행 중...</p>;
+    }
+
+    try {
+      if (typeof rawSummary === "string" && (rawSummary.trim().startsWith("[") || rawSummary.trim().startsWith("{"))) {
+        const parsed = JSON.parse(rawSummary);
+
+        if (Array.isArray(parsed)) {
+          return (
+            <ul className="space-y-[10px] list-none pl-0">
+              {parsed.map((sentence, idx) => (
+                <li key={idx} className="flex items-start gap-[8px] text-[14px] text-black leading-[24px]">
+                  <span className="text-[#4A8DFF] mt-[1px]">ㆍ</span>
+                  <span>{sentence}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+      }
+    } catch (e) {
+      console.log("JSON 파싱 패스, 일반 텍스트 포맷팅 가동");
+    }
+
+    return (
+      <p className="text-[14px] leading-[26px] text-black whitespace-pre-wrap">
+        {rawSummary.replace(/[\[\]"']/g, "")}
+      </p>
+    );
+  };
+
+  // 🎯 [실시간 렌더링 핵교정] 
+  // 함수 내부에 변수를 배치하여, 상태(State)가 바뀔 때마다 최신 백엔드 데이터를 즉시 추적하도록 동적 렌더러 함수로 갱신 완료!
+  const renderDecisionBoxContent = () => {
+    const activeDecisions = meeting?.decisions || [];
+    const activeSummaryForDecision = meeting?.aiSummary || meeting?.summaryText || meeting?.summary || "";
+
+    // 1순위: 백엔드가 리얼 decisions 배열 데이터를 넘겨줬을 경우
+    if (Array.isArray(activeDecisions) && activeDecisions.length > 0) {
+      return activeDecisions.map((decision, index) => (
+        <p key={index}>
+          {index + 1}. {typeof decision === "string" ? decision : decision.content || decision.title}
+        </p>
+      ));
+    }
+
+    // 2순위: decisions 배열은 비어있지만 요약 텍스트 주머니가 채워져 있을 경우
+    if (activeSummaryForDecision && String(activeSummaryForDecision).trim() !== "") {
+      try {
+        const cleanStr = String(activeSummaryForDecision).trim();
+        if (cleanStr.startsWith("[") || cleanStr.includes("[")) {
+          const targetJson = cleanStr.substring(cleanStr.indexOf("["), cleanStr.lastIndexOf("]") + 1);
+          const parsed = JSON.parse(targetJson);
+
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return (
+              <div className="space-y-[8px]">
+                {parsed.map((str, idx) => (
+                  <p key={idx} className="flex items-start gap-[6px]">
+                    <span className="text-[#4A8DFF] mt-[2px]">ㆍ</span>
+                    <span className="text-[14px] text-black leading-[24px]">
+                      {String(str).replace(/[\[\]"']/g, "").trim()}
+                    </span>
+                  </p>
+                ))}
+              </div>
+            );
+          }
+        }
+      } catch (e) {
+        console.log("결정사항 내부 파싱 예외 복구 진행");
+      }
+
+      // 일반 통문자열 형태일 경우 대괄호를 걷어내고 정형화 출력
+      return (
+        <p className="whitespace-pre-wrap text-[14px] text-black leading-[24px]">
+          ㆍ{String(activeSummaryForDecision).replace(/[\[\]"']/g, "").trim()}
+        </p>
+      );
+    }
+
+    // 3순위: 백엔드 데이터가 아예 통째로 비어있을 때 가이드라인 출력
+    return <p className="text-gray-400">ㆍAI 분석 기반 자동 의사결정 요약 완료</p>;
+  };
 
   return (
     <Layout>
       <Breadcrumb items={["home", "meeting", "meetingResult"]} />
 
       {isLoading && (
-        <div className="w-[980px] h-[460px] mx-auto border border-[#C9DEFA] bg-white flex items-center justify-center text-[15px] text-black shadow-sm">
-          회의 분석 결과를 불러오는 중입니다...
+        <div className="w-[980px] h-[460px] mx-auto border border-[#C9DEFA] bg-white flex items-center justify-center text-[15px] text-gray-400 shadow-sm animate-pulse">
+          KNOTE AI 협업 엔진이 회의 내용을 분석 요약하는 중입니다...
         </div>
       )}
 
       {!isLoading && errorMessage && (
         <div className="w-[980px] h-[460px] mx-auto border border-[#C9DEFA] bg-white flex flex-col items-center justify-center text-center shadow-sm">
-          <p className="text-[15px] font-semibold text-black mb-[12px]">
-            결과 조회 실패
-          </p>
-          <p className="text-[13px] leading-[22px] text-red-500 max-w-[520px]">
-            {errorMessage}
-          </p>
+          <p className="text-[15px] font-semibold text-black mb-[12px]">결과 조회 실패</p>
+          <p className="text-[13px] leading-[22px] text-red-500 max-w-[520px]">{errorMessage}</p>
         </div>
       )}
 
@@ -217,141 +279,75 @@ function MeetingResult() {
                 {meetingTitle}
               </h2>
 
-              {/* 💡 [수정] 클릭 시 백엔드 파일 다운로드를 트리거하도록 onClick 이벤트 바인딩 */}
-              <button 
+              <button
                 onClick={handleDownloadTranscript}
                 disabled={isDownloading}
-                className={`w-[84px] h-[30px] bg-[#4A8DFF] text-white text-[13px] rounded-[3px] font-medium transition-colors hover:bg-[#4A8DFF]/90 active:bg-[#4A8DFF]/80 ${
+                className={`w-[114px] h-[30px] bg-[#4A8DFF] text-white text-[13px] rounded-[3px] font-medium transition-colors hover:bg-[#4A8DFF]/90 active:bg-[#4A8DFF]/80 ${
                   isDownloading ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
-                {isDownloading ? "받는 중..." : "다운로드"}
+                {isDownloading ? "받는 중..." : "원문 다운로드"}
               </button>
             </div>
 
             <div className="w-full border border-[#C9DEFA] bg-white mb-[28px] shadow-sm">
               <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
-                <span className="text-[15px] font-semibold text-black">
-                  회의 결정사항
-                </span>
+                <span className="text-[15px] font-semibold text-black">회의 결정사항</span>
               </div>
 
               <div className="px-[20px] py-[18px] text-[14px] leading-[30px] text-black min-h-[150px]">
-                {Array.isArray(decisions) && decisions.length > 0 ? (
-                  decisions.map((decision, index) => (
-                    <p key={index}>
-                      {index + 1}.{" "}
-                      {typeof decision === "string"
-                        ? decision
-                        : decision.content || decision.title || decision.text}
-                    </p>
-                  ))
-                ) : (
-                  <p className="text-gray-500">
-                    백엔드 응답에 결정사항 데이터가 없습니다.
-                  </p>
-                )}
+                {renderDecisionBoxContent()}
               </div>
             </div>
 
             <div className="w-full border border-[#C9DEFA] bg-white shadow-sm">
               <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
-                <span className="text-[15px] font-semibold text-black">
-                  AI TODO
-                </span>
+                <span className="text-[15px] font-semibold text-black">AI TODO</span>
               </div>
 
               <div className="px-[20px] py-[18px] min-h-[170px]">
                 {actionItems.length > 0 ? (
                   <div className="space-y-[12px] text-[14px] text-black">
                     {actionItems.map((item) => (
-                      <label
-                        key={item.id}
-                        className="flex items-center justify-between gap-[10px] cursor-pointer"
-                      >
+                      <label key={item.id} className="flex items-center justify-between gap-[10px] cursor-pointer">
                         <div className="flex items-center gap-[10px]">
-                          <input
-                            type="checkbox"
-                            defaultChecked={item.done}
-                            className="w-[15px] h-[15px] accent-[#4A8DFF]"
-                          />
+                          <input type="checkbox" defaultChecked={item.done} className="w-[15px] h-[15px] accent-[#4A8DFF]" />
                           <span>{item.title}</span>
                         </div>
-
-                        <span className="text-[13px] text-black whitespace-nowrap">
-                          {item.assignee}
-                        </span>
+                        <span className="text-[13px] text-black whitespace-nowrap">{item.assignee}</span>
                       </label>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[14px] text-gray-500">
-                    백엔드 응답에 액션아이템 데이터가 없습니다.
-                  </p>
+                  <p className="text-[14px] text-gray-500">백엔드 응답에 액션아이템 데이터가 없습니다.</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Right column */}
-          <div>
-            <div className="border border-[#C9DEFA] bg-white mb-[18px] shadow-sm">
-              <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
-                <span className="text-[15px] font-semibold text-black">
-                  회의 요약
-                </span>
-              </div>
-
-              <div className="grid grid-cols-[140px_1fr] border-b border-[#C9DEFA]">
-                <div className="h-[40px] border-r border-[#C9DEFA] flex items-center px-[16px] text-[14px] text-black">
-                  회의 ID
-                </div>
-                <div className="h-[40px] flex items-center px-[16px] text-[14px] text-black">
-                  {meeting?.meetingId || meetingId}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-[140px_1fr]">
-                <div className="h-[40px] border-r border-[#C9DEFA] flex items-center px-[16px] text-[14px] text-black">
-                  회의명
-                </div>
-                <div className="h-[40px] flex items-center px-[16px] text-[14px] text-black truncate">
-                  {meetingTitle}
-                </div>
-              </div>
-            </div>
-
+          <div className="space-y-[24px]">
             <SectionBox title="AI 회의 요약">
-              {summaryText ? (
-                <p>{summaryText}</p>
-              ) : (
-                <p className="text-gray-500">
-                  백엔드 응답에 회의 요약 데이터가 없습니다.
-                </p>
-              )}
+              {renderProfessionalSummary()}
             </SectionBox>
 
-            <div className="border border-[#C9DEFA] bg-white h-[310px] overflow-hidden mt-[18px] shadow-sm">
+            <div className="border border-[#C9DEFA] bg-white h-[386px] overflow-hidden shadow-sm">
               <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px]">
-                <span className="text-[15px] font-semibold text-black">
-                  STT 변환 결과
-                </span>
+                <span className="text-[15px] font-semibold text-black">STT 변환 결과 원문</span>
               </div>
 
-              <div className="h-[268px] overflow-y-auto px-[20px] py-[18px] text-[14px] text-black leading-[24px]">
+              <div className="h-[342px] overflow-y-auto px-[20px] py-[18px] text-[14px] text-black leading-[24px] bg-gray-50/30">
                 {transcriptList.length > 0 ? (
                   transcriptList.map((segment, index) => (
-                    <div key={index} className="mb-[22px]">
-                      <p className="font-semibold mb-[6px] text-black">
+                    <div key={index} className="mb-[22px] bg-white p-[12px] border border-gray-100 rounded-[3px]">
+                      <p className="font-bold text-[13px] text-[#4A8DFF] mb-[6px]">
                         {segment.speaker}
                       </p>
-                      <p>{segment.text}</p>
+                      <p className="text-[13px] text-black">{segment.text}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500">
-                    백엔드 응답에 STT 변환 결과가 없습니다.
-                  </p>
+                  <p className="text-gray-500 text-center pt-[100px]">음성 변환 데이터 스크립트 원문이 존재하지 않습니다.</p>
                 )}
               </div>
             </div>
