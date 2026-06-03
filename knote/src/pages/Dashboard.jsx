@@ -18,6 +18,17 @@ const monthNames = [
   "DECEMBER",
 ];
 
+const PROJECT_OPTIONS = [
+  {
+    id: "capstone-a",
+    name: "캡스톤디자인과창업프로젝트 A",
+  },
+  {
+    id: "capstone-b",
+    name: "캡스톤디자인과창업프로젝트 B",
+  },
+];
+
 function TodoRow({ text, checked = false }) {
   return (
     <label className="flex items-center gap-[10px] h-[34px] text-[14px] text-black cursor-pointer">
@@ -225,13 +236,18 @@ function Dashboard() {
   const handleNextMonth = () =>
     setCalendarDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
 
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(PROJECT_OPTIONS[1]);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("전체");
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
   const [teamMembers, setTeamMembers] = useState(["전체"]);
-  const [projectName, setProjectName] = useState("PROJECT 로딩 중...");
+  const [projectName, setProjectName] = useState(
+    `PROJECT: ${PROJECT_OPTIONS[1].name}`
+  );
   const [isTeamLeader, setIsTeamLeader] = useState(true);
 
   const [personalNote, setPersonalNote] = useState(() => {
@@ -255,25 +271,18 @@ function Dashboard() {
           setTeamMembers([...realNames, "전체"]);
         }
 
-        const titleRes = await api.get(`/teams/${teamId}`);
-
-        if (titleRes.data && titleRes.data.name) {
-          setProjectName(`PROJECT: ${titleRes.data.name}`);
-        } else {
-          setProjectName("PROJECT: 캡스톤디자인과창업프로젝트 B");
-        }
+        // 팀 이름 API는 유지하되, 프로젝트 드롭다운 기본값은 캡스톤디자인과창업프로젝트 B로 유지
+        await api.get(`/teams/${teamId}`);
       } catch (error) {
         console.error("대시보드 실시간 연동 중 에러 발생:", error);
         setTeamMembers(["정서윤", "임이랑", "강민지", "전체"]);
-        setProjectName("PROJECT: 캡스톤디자인과창업프로젝트 B");
       }
     };
 
     fetchDashboardData();
   }, []);
 
-  const isLoading =
-    projectName === "PROJECT 로딩 중..." || teamMembers.length <= 1;
+  const isLoading = teamMembers.length <= 1;
 
   if (isLoading) {
     return (
@@ -320,6 +329,12 @@ function Dashboard() {
     }, 1200);
   };
 
+  const handleProjectSelect = (project) => {
+    setSelectedProject(project);
+    setProjectName(`PROJECT: ${project.name}`);
+    setIsProjectDropdownOpen(false);
+  };
+
   return (
     <Layout>
       <div className="w-[980px] mx-auto text-black">
@@ -348,9 +363,34 @@ function Dashboard() {
         <div className="w-full flex justify-between items-start gap-[40px]">
           <div className="flex flex-col gap-[28px] flex-1">
             <div className="flex items-center gap-[12px] w-full h-[34px]">
-              <div className="w-[320px] h-[34px] border border-[#C9DEFA] bg-white flex items-center justify-between px-[10px] text-[13px] font-medium shadow-sm">
-                <span className="truncate">{projectName}</span>
-                <span className="text-[9px] text-slate-400">▼</span>
+              <div className="relative w-[320px] h-[34px]">
+                <button
+                  type="button"
+                  onClick={() => setIsProjectDropdownOpen((prev) => !prev)}
+                  className="w-full h-[34px] border border-[#C9DEFA] bg-white flex items-center justify-between px-[10px] text-[13px] font-medium shadow-sm"
+                >
+                  <span className="truncate">{projectName}</span>
+                  <span className="text-[9px] text-slate-400">▼</span>
+                </button>
+
+                {isProjectDropdownOpen && (
+                  <div className="absolute left-0 top-[36px] z-50 w-full border border-[#C9DEFA] bg-white rounded-[4px] shadow-md overflow-hidden text-[13px]">
+                    {PROJECT_OPTIONS.map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        onClick={() => handleProjectSelect(project)}
+                        className={`w-full min-h-[36px] text-left px-[10px] leading-[18px] hover:bg-[#EAF1FC] ${
+                          selectedProject.id === project.id
+                            ? "bg-[#ADDCFF] font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {project.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="relative w-[110px] flex-shrink-0">
