@@ -95,9 +95,7 @@ function FileUpload() {
               <span className="text-[15px] font-semibold text-black">
                 음성 파일 업로드
               </span>
-              <span className="text-[13px] text-gray-500">
-                mp3, wav, m4a 파일을 등록할 수 있습니다
-              </span>
+              
             </div>
 
             <div className="h-[430px] flex items-center justify-center gap-[52px]">
