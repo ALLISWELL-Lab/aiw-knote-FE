@@ -29,15 +29,119 @@ const PROJECT_OPTIONS = [
   },
 ];
 
-function TodoRow({ text, checked = false }) {
+const DEFAULT_DASHBOARD_TODOS = [
+  {
+    id: 1,
+    task: "회의 분석 결과 페이지 스크린샷 정리",
+    assignee: "임이랑",
+    dueDate: "2026-06-05",
+    status: "진행 중",
+    checked: true,
+  },
+  {
+    id: 2,
+    task: "백엔드 API 응답 형식 확인",
+    assignee: "정서윤",
+    dueDate: "2026-06-06",
+    status: "진행 중",
+    checked: false,
+  },
+  {
+    id: 3,
+    task: "회의 업로드 API 연동 점검",
+    assignee: "강민지",
+    dueDate: "2026-06-05",
+    status: "진행 중",
+    checked: false,
+  },
+  {
+    id: 4,
+    task: "발표용 시연 흐름 정리",
+    assignee: "공통",
+    dueDate: "2026-06-07",
+    status: "진행 중",
+    checked: false,
+  },
+];
+
+function getTodayKey() {
+  const today = new Date();
+  return formatDateKey(today);
+}
+
+function formatDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDday(dueDate) {
+  if (!dueDate) return "D-?";
+
+  const today = new Date();
+  const target = new Date(dueDate);
+
+  today.setHours(0, 0, 0, 0);
+  target.setHours(0, 0, 0, 0);
+
+  const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+
+  if (diff === 0) return "D-DAY";
+  if (diff > 0) return `D-${diff}`;
+  return `D+${Math.abs(diff)}`;
+}
+
+function normalizeTodos(rawTodos) {
+  if (!Array.isArray(rawTodos) || rawTodos.length === 0) {
+    return DEFAULT_DASHBOARD_TODOS;
+  }
+
+  return rawTodos.map((todo, index) => ({
+    id: todo.id || index + 1,
+    task: todo.task || todo.content || todo.title || "회의 기반 TODO",
+    assignee: todo.assignee || todo.member || todo.owner || "미배정",
+    dueDate: todo.dueDate || todo.deadline || "2026-06-05",
+    status: todo.status || "진행 중",
+    checked: todo.checked || false,
+  }));
+}
+
+function TodoRow({ todo, onToggle }) {
   return (
-    <label className="flex items-center gap-[10px] h-[34px] text-[14px] text-black cursor-pointer">
+    <label className="flex items-start gap-[10px] min-h-[42px] text-[13px] text-black cursor-pointer py-[6px]">
       <input
         type="checkbox"
-        defaultChecked={checked}
-        className="w-[13px] h-[13px] accent-[#4A8DFF]"
+        checked={todo.checked}
+        onChange={() => onToggle(todo.id)}
+        className="w-[13px] h-[13px] mt-[3px] accent-[#4A8DFF] shrink-0"
       />
-      <span>{text}</span>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-[8px]">
+          <span
+            className={`leading-[18px] ${
+              todo.checked ? "line-through text-gray-400" : "text-black"
+            }`}
+          >
+            {todo.assignee} · {todo.task}
+          </span>
+
+          <span className="text-[11px] font-semibold text-[#4A8DFF] whitespace-nowrap">
+            {getDday(todo.dueDate)}
+          </span>
+        </div>
+
+        <div className="mt-[3px] flex items-center gap-[6px]">
+          <span className="h-[18px] px-[6px] bg-[#EAF1FC] border border-[#C9DEFA] rounded-full text-[10px] text-black flex items-center">
+            {todo.status}
+          </span>
+          <span className="text-[10px] text-gray-500">
+            마감 {todo.dueDate}
+          </span>
+        </div>
+      </div>
     </label>
   );
 }
@@ -59,6 +163,7 @@ function getCalendarDays(displayDate, todayRef) {
 
     return {
       date: current,
+      key: formatDateKey(current),
       day: current.getDate(),
       isCurrentMonth: current.getMonth() === month,
       isToday:
@@ -69,27 +174,44 @@ function getCalendarDays(displayDate, todayRef) {
   });
 }
 
-function formatScheduleDate(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+function formatScheduleDate(dateKey) {
+  const [year, month, day] = dateKey.split("-");
 
   return `${year}/${month}/${day}`;
 }
 
-function CalendarCell({ day, active = false, muted = false }) {
+function CalendarCell({
+  item,
+  active = false,
+  muted = false,
+  selected = false,
+  hasSchedules = false,
+  onClick,
+}) {
   return (
-    <div
-      className={`h-[44px] flex items-center justify-center text-[14px] ${
-        active
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative h-[44px] flex items-center justify-center text-[14px] transition ${
+        selected
+          ? "bg-[#ADDCFF] text-black font-semibold"
+          : active
           ? "bg-[#4A8DFF] text-white font-semibold"
           : muted
-          ? "text-gray-400"
-          : "text-black"
+          ? "text-gray-400 hover:bg-[#F8FBFF]"
+          : "text-black hover:bg-[#EAF1FC]"
       }`}
     >
-      {day}
-    </div>
+      {item.day}
+
+      {hasSchedules && (
+        <span
+          className={`absolute bottom-[5px] w-[5px] h-[5px] rounded-full ${
+            active && !selected ? "bg-white" : "bg-[#4A8DFF]"
+          }`}
+        />
+      )}
+    </button>
   );
 }
 
@@ -222,12 +344,113 @@ function PermissionModal({ onClose }) {
   );
 }
 
+function ScheduleModal({
+  selectedDate,
+  schedule,
+  onClose,
+  onSave,
+  onDelete,
+}) {
+  const [title, setTitle] = useState(schedule?.title || "");
+  const [time, setTime] = useState(schedule?.time || "10:00");
+
+  const handleSave = () => {
+    if (!title.trim()) {
+      alert("일정 내용을 입력해 주세요.");
+      return;
+    }
+
+    onSave({
+      id: schedule?.id || Date.now(),
+      title: title.trim(),
+      time,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+      <div className="w-[390px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
+        <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+          <span className="text-[15px] font-semibold text-black">
+            일정 {schedule ? "수정" : "등록"}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[18px] text-black leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="px-[20px] py-[18px]">
+          <p className="text-[13px] font-semibold text-black mb-[14px]">
+            {formatScheduleDate(selectedDate)}
+          </p>
+
+          <label className="block text-[13px] font-semibold text-black mb-[8px]">
+            시간
+          </label>
+          <input
+            type="time"
+            value={time}
+            onChange={(event) => setTime(event.target.value)}
+            className="w-full h-[36px] border border-[#C9DEFA] bg-white px-[10px] text-[13px] text-black outline-none mb-[16px]"
+          />
+
+          <label className="block text-[13px] font-semibold text-black mb-[8px]">
+            일정 내용
+          </label>
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="일정 내용을 입력하세요"
+            className="w-full h-[36px] border border-[#C9DEFA] bg-white px-[10px] text-[13px] text-black outline-none"
+          />
+        </div>
+
+        <div className="h-[54px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px]">
+          {schedule ? (
+            <button
+              type="button"
+              onClick={() => onDelete(schedule.id)}
+              className="w-[56px] h-[28px] bg-white border border-[#E43D3D] text-[13px] text-[#E43D3D]"
+            >
+              삭제
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex items-center gap-[10px]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-[56px] h-[28px] bg-white border border-[#C9DEFA] text-[13px] text-black"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="w-[56px] h-[28px] bg-[#4A8DFF] text-white text-[13px]"
+            >
+              저장
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const today = new Date();
   const [calendarDate, setCalendarDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
 
+  const [selectedDateKey, setSelectedDateKey] = useState(getTodayKey());
   const calendarDays = getCalendarDays(calendarDate, today);
 
   const handlePrevMonth = () =>
@@ -248,7 +471,49 @@ function Dashboard() {
   const [projectName, setProjectName] = useState(
     `PROJECT: ${PROJECT_OPTIONS[1].name}`
   );
-  const [isTeamLeader, setIsTeamLeader] = useState(true);
+  const [isTeamLeader] = useState(true);
+
+  const [todos, setTodos] = useState(() => {
+    const matchedTodos = JSON.parse(
+      localStorage.getItem("knoteMatchedTodos") || "[]"
+    );
+
+    const sprintTodos = JSON.parse(
+      localStorage.getItem("knoteSprintTodos") || "[]"
+    );
+
+    return normalizeTodos(
+      matchedTodos.length > 0 ? matchedTodos : sprintTodos
+    );
+  });
+
+  const [schedules, setSchedules] = useState(() => {
+    const savedSchedules = JSON.parse(
+      localStorage.getItem("knoteSchedules") || "{}"
+    );
+
+    if (Object.keys(savedSchedules).length > 0) {
+      return savedSchedules;
+    }
+
+    return {
+      [getTodayKey()]: [
+        {
+          id: 1,
+          time: "10:00",
+          title: "회의(디스코드)",
+        },
+        {
+          id: 2,
+          time: "18:00",
+          title: "피그마 포스터 작업 완료하기",
+        },
+      ],
+    };
+  });
+
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(null);
 
   const [personalNote, setPersonalNote] = useState(() => {
     return (
@@ -271,7 +536,6 @@ function Dashboard() {
           setTeamMembers([...realNames, "전체"]);
         }
 
-        // 팀 이름 API는 유지하되, 프로젝트 드롭다운 기본값은 캡스톤디자인과창업프로젝트 B로 유지
         await api.get(`/teams/${teamId}`);
       } catch (error) {
         console.error("대시보드 실시간 연동 중 에러 발생:", error);
@@ -281,6 +545,14 @@ function Dashboard() {
 
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("knoteSchedules", JSON.stringify(schedules));
+  }, [schedules]);
+
+  useEffect(() => {
+    localStorage.setItem("knoteDashboardTodos", JSON.stringify(todos));
+  }, [todos]);
 
   const isLoading = teamMembers.length <= 1;
 
@@ -311,6 +583,13 @@ function Dashboard() {
     );
   }
 
+  const filteredTodos =
+    selectedMember === "전체"
+      ? todos
+      : todos.filter((todo) => todo.assignee === selectedMember);
+
+  const selectedDateSchedules = schedules[selectedDateKey] || [];
+
   const handleNoticeClick = () => {
     if (isTeamLeader) {
       setShowNoticeModal(true);
@@ -333,6 +612,68 @@ function Dashboard() {
     setSelectedProject(project);
     setProjectName(`PROJECT: ${project.name}`);
     setIsProjectDropdownOpen(false);
+  };
+
+  const handleToggleTodo = (todoId) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === todoId ? { ...todo, checked: !todo.checked } : todo
+      )
+    );
+  };
+
+  const handleDateClick = (dateKey) => {
+    setSelectedDateKey(dateKey);
+  };
+
+  const handleOpenScheduleCreate = () => {
+    setEditingSchedule(null);
+    setShowScheduleModal(true);
+  };
+
+  const handleOpenScheduleEdit = (schedule) => {
+    setEditingSchedule(schedule);
+    setShowScheduleModal(true);
+  };
+
+  const handleSaveSchedule = (schedule) => {
+    setSchedules((prev) => {
+      const currentSchedules = prev[selectedDateKey] || [];
+      const isEditing = currentSchedules.some((item) => item.id === schedule.id);
+
+      const nextSchedules = isEditing
+        ? currentSchedules.map((item) =>
+            item.id === schedule.id ? schedule : item
+          )
+        : [...currentSchedules, schedule];
+
+      return {
+        ...prev,
+        [selectedDateKey]: nextSchedules.sort((a, b) =>
+          a.time.localeCompare(b.time)
+        ),
+      };
+    });
+
+    setShowScheduleModal(false);
+    setEditingSchedule(null);
+  };
+
+  const handleDeleteSchedule = (scheduleId) => {
+    setSchedules((prev) => {
+      const currentSchedules = prev[selectedDateKey] || [];
+      const nextSchedules = currentSchedules.filter(
+        (item) => item.id !== scheduleId
+      );
+
+      return {
+        ...prev,
+        [selectedDateKey]: nextSchedules,
+      };
+    });
+
+    setShowScheduleModal(false);
+    setEditingSchedule(null);
   };
 
   return (
@@ -425,11 +766,29 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="w-[320px] h-[220px] bg-white border border-[#C9DEFA] px-[18px] py-[14px] shadow-sm rounded-[2px]">
-              <TodoRow text="임이랑 TO DO LIST (D-1)" checked />
-              <TodoRow text="정서윤 TO DO LIST (D-2)" />
-              <TodoRow text="강민지 TO DO LIST (D-1)" />
-              <TodoRow text="공통 TO DO LIST (D-3)" />
+            <div className="w-[320px] min-h-[220px] bg-white border border-[#C9DEFA] px-[18px] py-[14px] shadow-sm rounded-[2px]">
+              <div className="flex items-center justify-between mb-[8px]">
+                <span className="text-[13px] font-semibold text-black">
+                  진행 중 TODO
+                </span>
+                <span className="text-[11px] text-gray-500">
+                  {selectedMember === "전체" ? "전체" : selectedMember}
+                </span>
+              </div>
+
+              {filteredTodos.length > 0 ? (
+                filteredTodos.map((todo) => (
+                  <TodoRow
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={handleToggleTodo}
+                  />
+                ))
+              ) : (
+                <div className="h-[150px] flex items-center justify-center text-[13px] text-gray-500">
+                  표시할 TODO가 없습니다.
+                </div>
+              )}
             </div>
 
             <div className="w-[320px] rotate-[-1.5deg] mt-[6px]">
@@ -510,24 +869,55 @@ function Dashboard() {
             </div>
 
             <div className="grid grid-cols-7 bg-white border border-[#C9DEFA] rounded-[2px] overflow-hidden shadow-sm">
-              {calendarDays.map((item, index) => (
+              {calendarDays.map((item) => (
                 <CalendarCell
-                  key={index}
-                  day={item.day}
+                  key={item.key}
+                  item={item}
                   active={item.isToday}
+                  selected={item.key === selectedDateKey}
                   muted={!item.isCurrentMonth}
+                  hasSchedules={(schedules[item.key] || []).length > 0}
+                  onClick={() => handleDateClick(item.key)}
                 />
               ))}
             </div>
 
             <div className="mt-[20px]">
-              <div className="h-[34px] bg-white border border-[#C9DEFA] flex items-center px-[12px] text-[13px] font-semibold rounded-t-[2px]">
-                <span className="mr-[6px] text-[9px] text-slate-400">▼</span>
-                {formatScheduleDate(today)} 일정 리스트
+              <div className="h-[34px] bg-white border border-[#C9DEFA] flex items-center justify-between px-[12px] text-[13px] font-semibold rounded-t-[2px]">
+                <div className="flex items-center">
+                  <span className="mr-[6px] text-[9px] text-slate-400">▼</span>
+                  {formatScheduleDate(selectedDateKey)} 일정 리스트
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenScheduleCreate}
+                  className="h-[24px] px-[8px] bg-[#4A8DFF] text-white text-[11px] font-semibold"
+                >
+                  + 추가
+                </button>
               </div>
-              <div className="h-[130px] bg-white border-x border-b border-[#C9DEFA] px-[20px] py-[16px] text-[13px] leading-[24px] shadow-sm rounded-b-[2px]">
-                · 오전 10시 회의(디스코드)
-                <br />· 피그마 포스터 작업 완료하기
+
+              <div className="min-h-[130px] bg-white border-x border-b border-[#C9DEFA] px-[16px] py-[14px] text-[13px] leading-[24px] shadow-sm rounded-b-[2px]">
+                {selectedDateSchedules.length > 0 ? (
+                  selectedDateSchedules.map((schedule) => (
+                    <button
+                      key={schedule.id}
+                      type="button"
+                      onClick={() => handleOpenScheduleEdit(schedule)}
+                      className="w-full text-left h-[28px] flex items-center gap-[8px] hover:bg-[#EAF1FC] px-[4px]"
+                    >
+                      <span className="text-[12px] font-semibold text-[#4A8DFF] w-[45px]">
+                        {schedule.time}
+                      </span>
+                      <span className="truncate">· {schedule.title}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="h-[96px] flex items-center justify-center text-[13px] text-gray-500">
+                    등록된 일정이 없습니다.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -540,6 +930,19 @@ function Dashboard() {
 
       {showPermissionModal && (
         <PermissionModal onClose={() => setShowPermissionModal(false)} />
+      )}
+
+      {showScheduleModal && (
+        <ScheduleModal
+          selectedDate={selectedDateKey}
+          schedule={editingSchedule}
+          onClose={() => {
+            setShowScheduleModal(false);
+            setEditingSchedule(null);
+          }}
+          onSave={handleSaveSchedule}
+          onDelete={handleDeleteSchedule}
+        />
       )}
     </Layout>
   );

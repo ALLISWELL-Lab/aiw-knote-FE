@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
 import Breadcrumb from "../components/Breadcrumb";
@@ -36,8 +37,8 @@ function isSameDate(dateA, dateB) {
   );
 }
 
-function isDateInCurrentWeek(date, today) {
-  const weekStart = getMondayStartDate(today);
+function isDateInSelectedWeek(date, selectedDate) {
+  const weekStart = getMondayStartDate(selectedDate);
   const weekEnd = new Date(weekStart);
 
   weekEnd.setDate(weekStart.getDate() + 6);
@@ -46,9 +47,9 @@ function isDateInCurrentWeek(date, today) {
   return date >= weekStart && date <= weekEnd;
 }
 
-function getCalendarDays(today) {
-  const year = today.getFullYear();
-  const month = today.getMonth();
+function getCalendarDays(displayDate, today, selectedDate) {
+  const year = displayDate.getFullYear();
+  const month = displayDate.getMonth();
 
   const firstDate = new Date(year, month, 1);
   const firstDay = firstDate.getDay();
@@ -67,13 +68,14 @@ function getCalendarDays(today) {
       day: current.getDate(),
       isCurrentMonth: current.getMonth() === month,
       isToday: isSameDate(current, today),
-      isCurrentWeek: isDateInCurrentWeek(current, today),
+      isCurrentWeek: isDateInSelectedWeek(current, selectedDate),
+      isSelected: isSameDate(current, selectedDate),
     };
   });
 }
 
-function formatWeeklyRange(today) {
-  const weekStart = getMondayStartDate(today);
+function formatWeeklyRange(selectedDate) {
+  const weekStart = getMondayStartDate(selectedDate);
   const weekEnd = new Date(weekStart);
 
   weekEnd.setDate(weekStart.getDate() + 6);
@@ -86,34 +88,73 @@ function formatWeeklyRange(today) {
   return `${weekStart.getFullYear()}.${startMonth}.${startDay} - ${weekEnd.getFullYear()}.${endMonth}.${endDay}`;
 }
 
-function CalendarCell({ day, active = false, today = false, muted = false }) {
+function CalendarCell({
+  day,
+  active = false,
+  today = false,
+  muted = false,
+  selected = false,
+  onClick,
+}) {
   return (
-    <div
-      className={`h-[42px] border border-[#C9DEFA] flex items-center justify-center text-[15px] ${
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-[42px] border border-[#C9DEFA] flex items-center justify-center text-[15px] transition ${
         today
           ? "bg-[#4A8DFF] text-white font-semibold"
+          : selected
+          ? "bg-[#8BCBFF] text-black font-semibold"
           : active
           ? "bg-[#ADDCFF] text-black font-semibold"
           : muted
-          ? "bg-[#EAF1FC] text-gray-400"
-          : "bg-white text-black"
+          ? "bg-[#EAF1FC] text-gray-400 hover:bg-[#F8FBFF]"
+          : "bg-white text-black hover:bg-[#EAF1FC]"
       }`}
     >
       {day}
-    </div>
+    </button>
   );
 }
 
 function WeeklyFeedback() {
   const today = new Date();
-  const calendarDays = getCalendarDays(today);
+
+  const [calendarDate, setCalendarDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+  const [selectedDate, setSelectedDate] = useState(today);
+
+  const calendarDays = getCalendarDays(calendarDate, today, selectedDate);
+
+  const handlePrevMonth = () => {
+    setCalendarDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+    );
+  };
+
+  const handleNextMonth = () => {
+    setCalendarDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+    );
+  };
+
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+
+    if (
+      date.getFullYear() !== calendarDate.getFullYear() ||
+      date.getMonth() !== calendarDate.getMonth()
+    ) {
+      setCalendarDate(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+  };
 
   return (
     <Layout>
       <Breadcrumb items={["home", "feedback", "weeklyFeedback"]} />
 
       <div className="w-[900px] mx-auto">
-        {/* Toggle buttons */}
         <div className="flex gap-[14px] mb-[34px]">
           <Link
             to="/feedback"
@@ -131,14 +172,28 @@ function WeeklyFeedback() {
         </div>
 
         <div className="grid grid-cols-[360px_1fr] gap-[60px]">
-          {/* Calendar */}
           <div className="border border-[#C9DEFA] bg-white w-[360px] shadow-sm">
             <div className="h-[54px] flex items-center justify-between px-[28px] text-black">
-              <span className="text-[28px]">‹</span>
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="text-[28px] leading-none hover:text-[#4A8DFF]"
+              >
+                ‹
+              </button>
+
               <span className="text-[16px] font-semibold">
-                {today.getFullYear()} {monthNames[today.getMonth()]}
+                {calendarDate.getFullYear()}{" "}
+                {monthNames[calendarDate.getMonth()]}
               </span>
-              <span className="text-[28px]">›</span>
+
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="text-[28px] leading-none hover:text-[#4A8DFF]"
+              >
+                ›
+              </button>
             </div>
 
             <div className="grid grid-cols-7 text-[13px] text-black">
@@ -157,18 +212,19 @@ function WeeklyFeedback() {
                   day={item.day}
                   active={item.isCurrentWeek}
                   today={item.isToday}
+                  selected={item.isSelected}
                   muted={!item.isCurrentMonth}
+                  onClick={() => handleSelectDate(item.date)}
                 />
               ))}
             </div>
           </div>
 
-          {/* Weekly feedback panel */}
           <div className="border border-[#C9DEFA] bg-white w-[640px] min-h-[500px] shadow-sm">
             <div className="h-[42px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-between px-[18px] text-[15px] font-semibold text-black">
               <span> AI 위클리 피드백 열람</span>
               <span className="text-[12px] text-gray-500 font-normal">
-                {formatWeeklyRange(today)}
+                {formatWeeklyRange(selectedDate)}
               </span>
             </div>
 
