@@ -233,6 +233,14 @@ function Dashboard() {
   const [projectName, setProjectName] = useState("PROJECT 로딩 중...");
   const [isTeamLeader, setIsTeamLeader] = useState(true); // 기본값 팀장 활성화
 
+  const [personalNote, setPersonalNote] = useState(() => {
+    return (
+      localStorage.getItem("knotePersonalNote") ||
+      "오늘 회의 핵심 정리하기...\n업로드 플로우 점검\nAPI 응답 구조 확인"
+    );
+  });
+  const [isNoteSaved, setIsNoteSaved] = useState(false);
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -313,6 +321,15 @@ function Dashboard() {
     setShowPermissionModal(true);
   };
 
+  const handlePersonalNoteSave = () => {
+    localStorage.setItem("knotePersonalNote", personalNote);
+    setIsNoteSaved(true);
+  
+    setTimeout(() => {
+      setIsNoteSaved(false);
+    }, 1200);
+  };
+
   return (
     <Layout>
       <div className="w-[980px] mx-auto text-black">
@@ -386,22 +403,37 @@ function Dashboard() {
               <TodoRow text="공통 TO DO LIST (D-3)" />
             </div>
 
-            <div className="w-[320px] rotate-[-1.5deg] mt-[6px]">
-              <div className="relative w-full h-[165px] bg-[#FFF1A8] px-[18px] py-[16px] text-[14px] text-[#4A3B12] shadow-[3px_5px_10px_rgba(0,0,0,0.1)] border border-[#EAE2B7]">
-                <div className="absolute top-[-8px] left-[50%] -translate-x-1/2 w-[70px] h-[16px] bg-[#ADDCFF]/80 rotate-[2deg] rounded-[1px] shadow-sm" />
-                <div className="font-semibold text-[13px] mb-[8px] text-black">
-                  개인 NOTE
-                </div>
-                <div className="text-[12px] leading-[21px] text-[#5C4A1B]">
-                  오늘 회의 핵심 정리하기...
-                  <br />
-                  업로드 플로우 점검
-                  <br />
-                  API 응답 구조 확인
-                </div>
-              </div>
-            </div>
-          </div>
+            {/* 하단: 수정 가능한 개인 NOTE */}
+<div className="w-[320px] rotate-[-1.5deg] mt-[6px]">
+  <div className="relative w-full h-[180px] bg-[#FFF1A8] px-[18px] py-[16px] text-[14px] text-[#4A3B12] shadow-[3px_5px_10px_rgba(0,0,0,0.1)] border border-[#EAE2B7]">
+    <div className="absolute top-[-8px] left-[50%] -translate-x-1/2 w-[70px] h-[16px] bg-[#ADDCFF]/80 rotate-[2deg] rounded-[1px] shadow-sm" />
+
+    <div className="flex items-center justify-between mb-[8px]">
+      <div className="font-semibold text-[13px] text-black">개인 NOTE</div>
+
+      <button
+        type="button"
+        onClick={handlePersonalNoteSave}
+        className="h-[24px] px-[8px] bg-white/70 border border-[#EAE2B7] text-[11px] font-semibold text-[#4A3B12] hover:bg-white"
+      >
+        저장
+      </button>
+    </div>
+
+    <textarea
+      value={personalNote}
+      onChange={(event) => setPersonalNote(event.target.value)}
+      placeholder="개인 메모를 입력하세요."
+      className="w-full h-[105px] bg-transparent resize-none outline-none text-[12px] leading-[21px] text-[#5C4A1B] placeholder:text-[#8A7A3E]"
+    />
+
+    {isNoteSaved && (
+      <div className="absolute right-[14px] bottom-[10px] text-[11px] font-semibold text-[#4A8DFF]">
+        저장되었습니다.
+      </div>
+    )}
+  </div>
+</div>
 
           <div className="w-[400px] flex-col flex-shrink-0">
             <div className="w-full h-[34px] flex items-center justify-end mb-[24px]">
