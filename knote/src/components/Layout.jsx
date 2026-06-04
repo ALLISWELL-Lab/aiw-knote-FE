@@ -305,7 +305,7 @@ function Layout({ children, customUser }) { // 🎯 1. 마이페이지 폼 상�
         <div className="h-px bg-black/25 mt-[58px] mb-[52px]" />
 
         <nav className="w-full bg-[#4A8DFF] shadow-[0_4px_4px_rgba(0,0,0,0.18)] px-[36px] py-[34px] flex flex-col gap-[23px]">
-          {item("/", "홈", "home", true)}
+          {item("/dashboard", "홈", "home", true)}
           {item("/team", "팀", "team")}
           {item("/meeting", "회의", "meeting")}
           {item("/todo", "투두", "todo")}
