@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Breadcrumb from "../components/Breadcrumb";
 import api from "../api";
@@ -107,7 +108,40 @@ function ResultModal({ message, onClose }) {
             onClick={onClose}
             className="w-[58px] h-[28px] border border-[#C9DEFA] bg-white text-[13px] text-black hover:bg-[#EAF1FC]"
           >
-            확인
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LogoutConfirmModal({ onCancel, onConfirm }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+      <div className="w-[360px] bg-white border border-[#C9DEFA] shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
+        <div className="h-[46px] border-b border-[#C9DEFA] bg-[#EAF1FC] flex items-center px-[18px] text-[15px] font-semibold text-black">
+          로그아웃
+        </div>
+
+        <div className="px-[24px] py-[30px] text-[14px] text-black text-center">
+          로그아웃 하시겠습니까?
+        </div>
+
+        <div className="h-[54px] border-t border-[#C9DEFA] bg-[#EAF1FC] flex items-center justify-end gap-[10px] px-[18px]">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-[58px] h-[28px] border border-[#C9DEFA] bg-white text-[13px] text-black hover:bg-white"
+          >
+            아니오
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="w-[58px] h-[28px] bg-[#4A8DFF] text-white text-[13px] hover:opacity-90"
+          >
+            네
           </button>
         </div>
       </div>
@@ -116,9 +150,9 @@ function ResultModal({ message, onClose }) {
 }
 
 function MyPage() {
-  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATION);
+  const navigate = useNavigate();
 
-  // 백엔드 @NotNull 필드 유지를 위한 기존 회원 정보 원본 저장 상태
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATION);
   const [serverRawData, setServerRawData] = useState(null);
 
   const [userId, setUserId] = useState(1);
@@ -130,9 +164,11 @@ function MyPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showLogoutComplete, setShowLogoutComplete] = useState(false);
+
   const isIndividualAlarmDisabled = !notifications.allAlarm;
 
-  // 마운트 시 데이터 조회 및 백엔드 DTO 필드 변환 처리
   useEffect(() => {
     const fetchMyPageData = async () => {
       try {
@@ -140,14 +176,12 @@ function MyPage() {
         const memberResponse = await api.get("/members/me");
         const memberData = memberResponse.data || {};
 
-        // 원본 데이터를 보관하여 필수 데이터 규격 유지
         setServerRawData(memberData);
 
         setUserId(memberData.id || 1);
         setName(memberData.name || "정서윤");
         setRole(memberData.role || "");
-        
-        // interestedField 문자열을 쉼표 기준으로 쪼개어 tags 배열로 변환
+
         if (memberData.interestedField) {
           const parsedTags = memberData.interestedField
             .split(",")
@@ -159,16 +193,35 @@ function MyPage() {
         }
 
         try {
-          const notificationResponse = await api.get("/mypage/notifications/settings");
+          const notificationResponse = await api.get(
+            "/mypage/notifications/settings"
+          );
+
           if (notificationResponse.data) {
             const notificationData = notificationResponse.data;
+
             setNotifications({
-              allAlarm: notificationData.allAlarm ?? notificationData.allNotification ?? DEFAULT_NOTIFICATION.allAlarm,
-              meetingAlarm: notificationData.meetingAlarm ?? DEFAULT_NOTIFICATION.meetingAlarm,
-              todoAlarm: notificationData.todoAlarm ?? notificationData.deadlineAlarm ?? DEFAULT_NOTIFICATION.todoAlarm,
-              meetingAlarmTime: notificationData.meetingAlarmTime || DEFAULT_NOTIFICATION.meetingAlarmTime,
-              todoAlarmTime: notificationData.todoAlarmTime || notificationData.deadlineAlarmTime || DEFAULT_NOTIFICATION.todoAlarmTime,
-              customMinute: notificationData.customMinute ?? DEFAULT_NOTIFICATION.customMinute,
+              allAlarm:
+                notificationData.allAlarm ??
+                notificationData.allNotification ??
+                DEFAULT_NOTIFICATION.allAlarm,
+              meetingAlarm:
+                notificationData.meetingAlarm ??
+                DEFAULT_NOTIFICATION.meetingAlarm,
+              todoAlarm:
+                notificationData.todoAlarm ??
+                notificationData.deadlineAlarm ??
+                DEFAULT_NOTIFICATION.todoAlarm,
+              meetingAlarmTime:
+                notificationData.meetingAlarmTime ||
+                DEFAULT_NOTIFICATION.meetingAlarmTime,
+              todoAlarmTime:
+                notificationData.todoAlarmTime ||
+                notificationData.deadlineAlarmTime ||
+                DEFAULT_NOTIFICATION.todoAlarmTime,
+              customMinute:
+                notificationData.customMinute ??
+                DEFAULT_NOTIFICATION.customMinute,
             });
           }
         } catch (notifErr) {
@@ -189,12 +242,16 @@ function MyPage() {
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
+
       const cleanTag = singleTagInput.trim().replace("#", "");
+
       if (cleanTag === "") return;
+
       if (tags.includes(cleanTag)) {
         setSingleTagInput("");
         return;
       }
+
       setTags([...tags, cleanTag]);
       setSingleTagInput("");
     }
@@ -204,14 +261,12 @@ function MyPage() {
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  // 백엔드 MemberDTO 필드 규격에 맞춰 매핑 후 수정 요청 전송
   const handleMemberSave = async () => {
     if (!name.trim()) {
       setResultMessage("이름을 입력해 주세요.");
       return;
     }
 
-    // tags 배열을 다시 쉼표 구분 문자열로 채워 백엔드 필드 명세 충족
     const interestedFieldString = tags.join(", ");
 
     const payload = {
@@ -221,7 +276,7 @@ function MyPage() {
       name: name.trim(),
       interestedField: interestedFieldString,
       activated: serverRawData?.activated ?? true,
-      role: role.trim()
+      role: role.trim(),
     };
 
     try {
@@ -229,7 +284,9 @@ function MyPage() {
       setResultMessage("회원 프로필 정보가 성공적으로 변경되었습니다.");
     } catch (error) {
       console.error("회원 정보 수정 실패:", error);
-      setResultMessage("회원 프로필 정보 변경에 실패했습니다. 다시 시도해 주세요.");
+      setResultMessage(
+        "회원 프로필 정보 변경에 실패했습니다. 다시 시도해 주세요."
+      );
     }
   };
 
@@ -252,14 +309,52 @@ function MyPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const baseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+      await fetch(`${baseUrl}/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("백엔드 로그아웃 요청 실패:", error);
+    } finally {
+      localStorage.removeItem("knoteNotices");
+      localStorage.removeItem("knotePersonalNote");
+      localStorage.removeItem("knoteSchedules");
+      localStorage.removeItem("knoteMatchedTodos");
+      localStorage.removeItem("knoteDashboardTodos");
+
+      setShowLogoutConfirm(false);
+      setShowLogoutComplete(true);
+    }
+  };
+
+  const handleLogoutCompleteClose = () => {
+    setShowLogoutComplete(false);
+    navigate("/");
+  };
+
   return (
     <Layout customUser={{ name, tags: tags }}>
       <Breadcrumb items={["home", "myPage"]} />
 
       <div className="w-[980px] mx-auto text-black">
         <section className="w-[620px] min-h-[250px] border border-[#C9DEFA] bg-white px-[34px] py-[28px] mb-[42px] shadow-sm relative">
-          <div className="inline-flex h-[28px] px-[14px] border border-[#4A8DFF] text-[#4A8DFF] text-[13px] font-semibold items-center justify-center mb-[26px]">
-            프로필 관리
+          <div className="flex items-center justify-between mb-[26px]">
+            <div className="inline-flex h-[28px] px-[14px] border border-[#4A8DFF] text-[#4A8DFF] text-[13px] font-semibold items-center justify-center">
+              프로필 관리
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(true)}
+              className="h-[30px] px-[12px] bg-white border border-[#E43D3D] text-[#E43D3D] text-[13px] font-semibold hover:bg-[#FFF0F0] transition"
+            >
+              로그아웃
+            </button>
           </div>
 
           <div className="flex items-start gap-[34px]">
@@ -378,7 +473,9 @@ function MyPage() {
               <span className="font-semibold">회의 알림 시간 설정</span>
               <AlarmTimeSelect
                 value={notifications.meetingAlarmTime}
-                disabled={isIndividualAlarmDisabled || !notifications.meetingAlarm}
+                disabled={
+                  isIndividualAlarmDisabled || !notifications.meetingAlarm
+                }
                 onChange={(value) =>
                   setNotifications((prev) => ({
                     ...prev,
@@ -443,7 +540,9 @@ function MyPage() {
                     }
                     className="w-full h-[32px] border border-[#C9DEFA] px-[8px] text-[13px] text-black outline-none"
                   />
-                  <span className="text-[12px] text-black whitespace-nowrap">분 전</span>
+                  <span className="text-[12px] text-black whitespace-nowrap">
+                    분 전
+                  </span>
                 </div>
               </div>
             </div>
@@ -461,10 +560,30 @@ function MyPage() {
         </section>
       </div>
 
+      {isLoading && (
+        <p className="mt-[18px] text-[13px] text-gray-500 text-center">
+          마이페이지 정보를 불러오는 중입니다.
+        </p>
+      )}
+
       {resultMessage && (
         <ResultModal
           message={resultMessage}
           onClose={() => setResultMessage("")}
+        />
+      )}
+
+      {showLogoutConfirm && (
+        <LogoutConfirmModal
+          onCancel={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+        />
+      )}
+
+      {showLogoutComplete && (
+        <ResultModal
+          message="로그아웃이 완료되었습니다."
+          onClose={handleLogoutCompleteClose}
         />
       )}
     </Layout>

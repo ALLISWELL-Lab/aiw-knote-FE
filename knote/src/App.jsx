@@ -29,10 +29,11 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* 랜딩 / 로그인 화면 */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Landing />} />
 
         {/* 메인 대시보드 */}
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
 
         {/* 팀 */}
         <Route path="/team" element={<Team />} />
