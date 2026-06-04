@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const breadcrumbMap = {
-  home: { label: "⌂ Home", to: "/" },
+  home: { label: "⌂ Home", to: "/dashboard" },
   team: { label: "팀", to: "/team" },
   meeting: { label: "회의", to: "/meeting" },
   meetingUpload: { label: "회의 업로드", to: "/meeting" },
