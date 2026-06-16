@@ -269,11 +269,11 @@ function TeamOnboarding() {
       </style>
 
       <div className="w-[1080px] flex flex-col items-center translate-y-[-6px]">
-        <img
-          src="/images/knote-logo.png"
-          alt="KNOTE"
-          className="w-[590px] h-auto object-contain mb-[60px] select-none"
-          draggable="false"
+      <img
+        src="/images/knote-logo.png"
+        alt="KNOTE"
+       className="w-[590px] h-auto object-contain mb-[60px] select-none translate-x-[56px]"
+        draggable="false"
         />
 
         <div className="text-center mb-[60px]">
