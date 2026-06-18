@@ -41,6 +41,9 @@ function Landing() {
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
+      // // 만약 baseUrl에 '/api/v1'이 포함되어 있다면, 소셜 로그인할 때만 싹 제거해 줍니다.
+      // const cleanBaseUrl = baseUrl.replace('/api/v1', '');
+
     window.location.href = `${baseUrl}/oauth2/authorization/google`;
   };
 
